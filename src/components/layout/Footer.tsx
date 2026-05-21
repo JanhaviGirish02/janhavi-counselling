@@ -96,7 +96,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-3 text-gray-400 text-sm">
                 <span className="text-sage-300 text-xs mt-0.5">â—</span>
-                Sessions: Monâ€“Sat, 10 AM â€“ 8 PM
+                Sessions: Mon–Sat, 10 AM – 8 PM
               </li>
             </ul>
           </div>
@@ -122,7 +122,7 @@ export default function Footer() {
               </Link>
             </div>
             <p className="text-xs text-gray-500 flex items-center gap-1">
-              Â© {currentYear} Janhavi Girish. Made with <Heart size={12} className="text-rose-accent" /> All rights reserved.
+              © {currentYear} Janhavi Girish. Made with <Heart size={12} className="text-rose-accent" /> All rights reserved.
             </p>
           </div>
         </div>

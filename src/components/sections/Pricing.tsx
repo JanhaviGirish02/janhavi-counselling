@@ -10,7 +10,7 @@ export default function Pricing() {
     {
       icon: User,
       title: 'Individual Therapy',
-      price: 'â‚¹1,500',
+      price: '₹1,500',
       suffix: 'onwards',
       features: [
         '60 minutes per session',
@@ -29,7 +29,7 @@ export default function Pricing() {
     {
       icon: Heart,
       title: 'Couple Therapy',
-      price: 'â‚¹3,000',
+      price: '₹3,000',
       suffix: 'onwards',
       features: [
         '60 minutes per session',
@@ -48,7 +48,7 @@ export default function Pricing() {
     {
       icon: Users,
       title: 'Family Therapy',
-      price: 'â‚¹4,000',
+      price: '₹4,000',
       suffix: 'onwards',
       features: [
         '60 minutes per session',
@@ -67,7 +67,7 @@ export default function Pricing() {
     {
       icon: Trophy,
       title: 'Sports Counselling',
-      price: 'â‚¹1,500',
+      price: '₹1,500',
       suffix: 'onwards',
       features: [
         '60 minutes per session',

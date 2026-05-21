@@ -116,9 +116,6 @@ export default function PaymentStep({ bookingData, updateBookingData, onNext, on
     try {
       const { collection, addDoc } = await import('firebase/firestore');
       const { db } = await import('@/lib/firebase');
-      if (!db || !(db as any).type) {
-        throw new Error('Firestore not configured');
-      }
       await addDoc(collection(db, 'bookings'), {
         ...bookingData,
         paymentId,

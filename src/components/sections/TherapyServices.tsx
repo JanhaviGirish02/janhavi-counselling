@@ -11,7 +11,6 @@ export default function TherapyServices() {
       icon: User,
       title: 'Individual Therapy',
       description: 'One-on-one sessions tailored to your unique needs. Navigate anxiety, depression, stress, trauma, and personal growth in a safe space.',
-      features: ['60 min sessions', 'Online mode', 'Personalized approach'],
       color: 'from-sage-100 to-sage-50',
       iconBg: 'bg-sage-200 text-sage-600',
       href: '/book?type=individual',
@@ -20,7 +19,6 @@ export default function TherapyServices() {
       icon: Heart,
       title: 'Couple Therapy',
       description: 'Strengthen your relationship through better communication, trust-building, and conflict resolution in a supportive environment.',
-      features: ['60 min sessions', 'Both partners', 'Evidence-based'],
       color: 'from-rose-light to-beige-100',
       iconBg: 'bg-rose-light text-rose-dark',
       href: '/book?type=couple',
@@ -29,7 +27,6 @@ export default function TherapyServices() {
       icon: Users,
       title: 'Family Therapy',
       description: 'Heal family dynamics, improve communication, and build stronger connections within your family system.',
-      features: ['60 min sessions', 'All members', 'Systemic approach'],
       color: 'from-beige-200 to-beige-100',
       iconBg: 'bg-beige-300 text-charcoal-light',
       href: '/book?type=family',
@@ -38,7 +35,6 @@ export default function TherapyServices() {
       icon: Trophy,
       title: 'Sports Counselling',
       description: 'Mental performance support for athletes at every level. Combining professional training with 18 years of lived experience as a national competitive swimmer.',
-      features: ['60 min sessions', 'Athletes of all levels', 'Performance + wellbeing'],
       color: 'from-sage-200 to-sage-100',
       iconBg: 'bg-sage-300 text-sage-700',
       href: '/book?type=sports',
@@ -91,16 +87,6 @@ export default function TherapyServices() {
                       {service.description}
                     </p>
                   </div>
-
-                  {/* Features */}
-                  <ul className="space-y-2">
-                    {service.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2 text-sm text-charcoal-lighter">
-                        <div className="w-1.5 h-1.5 rounded-full bg-sage-300" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
 
                   {/* CTA */}
                   <Link
