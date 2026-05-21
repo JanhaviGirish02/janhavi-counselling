@@ -27,9 +27,14 @@ Firebase provides authentication and database for the website.
 
 1. Go to **Firestore Database** (left sidebar)
 2. Click **"Create database"**
-3. Start in **Test mode** (for development)
-4. Select region closest to India (e.g., `asia-south1`)
-5. Click **"Create"**
+3. **Database edition:** Choose **Standard Edition** (recommended for this website)
+   - **Standard Edition:** Pay-per-use, scales automatically, perfect for websites
+   - **Enterprise Edition:** High costs, for large-scale apps (not needed here)
+4. Start in **Test mode** (for development)
+5. Select region closest to India (e.g., `asia-south1`)
+6. Click **"Create"**
+
+> **💡 Tip:** Standard Edition charges per read/write/delete operation. For a therapy booking website with ~50-100 bookings/month, monthly cost is typically ₹100-500. You can change pricing mode anytime.
 
 ### Step 4: Get Firebase Config Keys
 
