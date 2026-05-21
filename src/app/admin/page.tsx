@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import {
-  collection, query, orderBy, getDocs, doc, updateDoc, setDoc, getDoc,
+  collection, query, getDocs, doc, getDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import toast from 'react-hot-toast';
@@ -86,34 +86,53 @@ export default function AdminDashboard() {
     noticeBanner: '',
   });
   const [savingSettings, setSavingSettings] = useState(false);
+  const [integrationStatus, setIntegrationStatus] = useState<{
+    firebase: boolean; razorpay: boolean; email: boolean; adminEmail: string | null;
+  } | null>(null);
 
   useEffect(() => {
     async function init() {
       try {
-        const q = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as Booking[];
+        // Fetch all bookings — sort client-side to avoid composite index requirement
+        const snap = await getDocs(query(collection(db, 'bookings')));
+        const data = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Booking[];
+        data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         setBookings(data);
         const meets: Record<string, string> = {};
         data.forEach((b) => { meets[b.id] = b.meetLink || ''; });
         setMeetLinkInputs(meets);
-        const availDoc = await getDoc(doc(db, 'settings', 'availability'));
-        if (availDoc.exists()) setAvailability(availDoc.data() as AvailabilitySettings);
-        const genDoc = await getDoc(doc(db, 'settings', 'general'));
-        if (genDoc.exists()) setGeneralSettings(genDoc.data() as GeneralSettings);
+
+        try {
+          const availDoc = await getDoc(doc(db, 'settings', 'availability'));
+          if (availDoc.exists()) setAvailability(availDoc.data() as AvailabilitySettings);
+        } catch { /* settings may not exist yet */ }
+
+        try {
+          const genDoc = await getDoc(doc(db, 'settings', 'general'));
+          if (genDoc.exists()) setGeneralSettings(genDoc.data() as GeneralSettings);
+        } catch { /* settings may not exist yet */ }
+
+        // Fetch integration status from server (can read server-only env vars)
+        try {
+          const res = await fetch('/api/status');
+          if (res.ok) setIntegrationStatus(await res.json());
+        } catch { /* not critical */ }
       } catch (err) {
         console.error('Admin init error:', err);
+        toast.error('Failed to load dashboard data. Check console for details.');
       } finally {
         setIsLoading(false);
       }
     }
     if (!loading && isAdmin) { init(); }
-    else if (!loading) { setIsLoading(false); }
+    else if (!loading && !isAdmin) { setIsLoading(false); }
   }, [loading, isAdmin]);
 
   const updateBookingStatus = async (bookingId: string, status: string) => {
     try {
-      await updateDoc(doc(db, 'bookings', bookingId), { status });
+      const { db: firestore } = await import('@/lib/firebase');
+      const { doc: fsDoc, updateDoc: fsUpdate } = await import('firebase/firestore');
+      await fsUpdate(fsDoc(firestore, 'bookings', bookingId), { status });
       setBookings((prev) => prev.map((b) => (b.id === bookingId ? { ...b, status } : b)));
       toast.success(`Booking marked as ${status}`);
     } catch {
@@ -125,7 +144,9 @@ export default function AdminDashboard() {
     const link = meetLinkInputs[bookingId] || '';
     setSavingMeetLink(bookingId);
     try {
-      await updateDoc(doc(db, 'bookings', bookingId), { meetLink: link });
+      const { db: firestore } = await import('@/lib/firebase');
+      const { doc: fsDoc, updateDoc: fsUpdate } = await import('firebase/firestore');
+      await fsUpdate(fsDoc(firestore, 'bookings', bookingId), { meetLink: link });
       setBookings((prev) => prev.map((b) => (b.id === bookingId ? { ...b, meetLink: link } : b)));
       const booking = bookings.find((b) => b.id === bookingId);
       if (booking?.email && link) {
@@ -136,7 +157,8 @@ export default function AdminDashboard() {
         });
       }
       toast.success('Meet link saved & emailed to client');
-    } catch {
+    } catch (e) {
+      console.error('Meet link save error:', e);
       toast.error('Failed to save meet link');
     } finally {
       setSavingMeetLink(null);
@@ -146,9 +168,12 @@ export default function AdminDashboard() {
   const saveAvailability = async () => {
     setSavingAvailability(true);
     try {
-      await setDoc(doc(db, 'settings', 'availability'), availability);
+      const { db: firestore } = await import('@/lib/firebase');
+      const { doc: fsDoc, setDoc: fsSet } = await import('firebase/firestore');
+      await fsSet(fsDoc(firestore, 'settings', 'availability'), availability);
       toast.success('Availability saved');
-    } catch {
+    } catch (e) {
+      console.error('Availability save error:', e);
       toast.error('Failed to save availability');
     } finally {
       setSavingAvailability(false);
@@ -158,9 +183,12 @@ export default function AdminDashboard() {
   const saveGeneralSettings = async () => {
     setSavingSettings(true);
     try {
-      await setDoc(doc(db, 'settings', 'general'), generalSettings);
+      const { db: firestore } = await import('@/lib/firebase');
+      const { doc: fsDoc, setDoc: fsSet } = await import('firebase/firestore');
+      await fsSet(fsDoc(firestore, 'settings', 'general'), generalSettings);
       toast.success('Settings saved');
-    } catch {
+    } catch (e) {
+      console.error('Settings save error:', e);
       toast.error('Failed to save settings');
     } finally {
       setSavingSettings(false);
@@ -526,14 +554,37 @@ export default function AdminDashboard() {
               <h2 className="font-heading text-lg font-semibold mb-4">Integration Status</h2>
               <div className="space-y-3">
                 {[
-                  { name: 'Razorpay Payment', status: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ? 'Connected' : 'Not configured' },
-                  { name: 'Firebase', status: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? 'Connected' : 'Not configured' },
-                  { name: 'Email (Gmail SMTP)', status: 'Configure GMAIL_USER + GMAIL_APP_PASSWORD in .env.local' },
-                  { name: 'Google Meet', status: 'Set meet link per booking in Bookings tab' },
+                  {
+                    name: 'Razorpay Payment',
+                    ok: integrationStatus?.razorpay ?? false,
+                    note: integrationStatus?.razorpay ? 'Connected' : 'Add NEXT_PUBLIC_RAZORPAY_KEY_ID to .env.local',
+                  },
+                  {
+                    name: 'Firebase / Firestore',
+                    ok: integrationStatus?.firebase ?? false,
+                    note: integrationStatus?.firebase ? 'Connected' : 'Add Firebase keys to .env.local',
+                  },
+                  {
+                    name: 'Email (Gmail SMTP)',
+                    ok: integrationStatus?.email ?? false,
+                    note: integrationStatus?.email
+                      ? `Sending from ${integrationStatus.adminEmail || process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'configured'}`
+                      : 'Set GMAIL_USER and a valid 16-char GMAIL_APP_PASSWORD in .env.local',
+                  },
+                  {
+                    name: 'Google Meet',
+                    ok: true,
+                    note: 'Paste meet links per-booking in the Bookings tab',
+                  },
                 ].map((item) => (
                   <div key={item.name} className="flex items-center justify-between py-2 border-b border-beige-100 last:border-0">
-                    <span className="text-sm text-charcoal">{item.name}</span>
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${item.status === 'Connected' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{item.status}</span>
+                    <div>
+                      <span className="text-sm text-charcoal">{item.name}</span>
+                      <p className="text-xs text-charcoal-lighter mt-0.5">{item.note}</p>
+                    </div>
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full flex-shrink-0 ml-3 ${item.ok ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                      {item.ok ? 'Connected' : 'Not set'}
+                    </span>
                   </div>
                 ))}
               </div>

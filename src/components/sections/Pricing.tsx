@@ -124,7 +124,7 @@ export default function Pricing() {
               )}
               
               <div className={`card h-full border-2 ${plan.color} transition-all duration-300 hover:-translate-y-1 ${plan.popular ? 'ring-2 ring-sage-200 ring-offset-4' : ''}`}>
-                <div className="space-y-6">
+                <div className="flex flex-col h-full gap-6">
                   {/* Icon & Title */}
                   <div className="flex items-center gap-3">
                     <div className={`w-12 h-12 rounded-xl ${plan.iconBg} flex items-center justify-center`}>
@@ -154,7 +154,7 @@ export default function Pricing() {
                   {/* CTA */}
                   <Link
                     href={plan.href}
-                    className={`${plan.buttonClass} block text-center w-full`}
+                    className={`${plan.buttonClass} block text-center w-full mt-auto`}
                   >
                     Book Session
                   </Link>

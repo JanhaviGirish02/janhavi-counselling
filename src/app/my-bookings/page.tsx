@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Video, Tag, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface Booking {
@@ -39,32 +39,36 @@ export default function MyBookingsPage() {
 
   useEffect(() => {
     async function fetchBookings() {
-      if (!user) return;
-      
+      if (!user) { setIsLoading(false); return; }
+
       try {
+        // Avoid composite index requirement by only using where() — sort client-side
         const q = query(
           collection(db, 'bookings'),
-          where('userId', '==', user.uid),
-          orderBy('createdAt', 'desc')
+          where('userId', '==', user.uid)
         );
         const snapshot = await getDocs(q);
-        const bookingsData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+        const bookingsData = snapshot.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...docSnap.data(),
         })) as Booking[];
 
-        if (bookingsData.length > 0) {
-          setBookings(bookingsData);
-        } else {
-          // Fallback: load from localStorage (demo mode or Firestore not configured)
-          const stored = JSON.parse(localStorage.getItem('bookings') || '[]');
-          const userBookings = stored.filter((b: any) => b.userId === user.uid || !b.userId);
-          setBookings(userBookings);
-        }
+        // Sort client-side: newest first
+        bookingsData.sort((a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setBookings(bookingsData);
       } catch (error) {
-        // Firestore not configured — load from localStorage
+        console.error('Bookings fetch error:', error);
+        // Fallback to localStorage
         const stored = JSON.parse(localStorage.getItem('bookings') || '[]');
-        setBookings(stored);
+        const userBookings = stored.filter((b: Booking & { userId?: string }) =>
+          b.userId === user.uid || !b.userId
+        );
+        userBookings.sort((a: Booking, b: Booking) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setBookings(userBookings);
       } finally {
         setIsLoading(false);
       }
