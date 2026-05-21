@@ -58,13 +58,15 @@ const firebaseConfig = {
 
 ### Firebase Environment Variables
 
+Your Firebase project keys are:
+
 ```env
-NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSy_your_api_key_here
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
-NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abc123def456
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyD3ao40WBxgl_M1EVJ7Dg-UsOotTHaZX-0
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=therapy-with-janhavi.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=therapy-with-janhavi
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=therapy-with-janhavi.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=310683607077
+NEXT_PUBLIC_FIREBASE_APP_ID=1:310683607077:web:0f6907a9fd94b3156d5fcc
 ```
 
 > **Note:** Firebase keys starting with `NEXT_PUBLIC_` are **public and safe** to expose. They're used in the browser for authentication. Real secrets are handled server-side.
@@ -130,71 +132,74 @@ Use these to test payments in Test Mode:
 
 ---
 
-## 3. Twilio WhatsApp Setup
+## 3. Gmail Email Notifications (Free)
 
-Twilio sends WhatsApp notifications to admin when bookings are made.
+The website sends two types of emails automatically:
+- **Admin** gets an email for every new booking and contact form submission
+- **Clients** get a booking confirmation email after payment
 
-### Step 1: Create Twilio Account
+This uses your own **Gmail account** with a Google App Password — completely free.
 
-1. Go to **[console.twilio.com](https://console.twilio.com/)**
-2. Sign up with email and password
-3. Verify phone and email
-4. Complete signup
+### Step 1: Enable 2-Factor Authentication on Gmail
 
-### Step 2: Get Twilio Credentials
+1. Go to **[myaccount.google.com/security](https://myaccount.google.com/security)**
+2. Under "How you sign in to Google", click **2-Step Verification**
+3. Follow the steps to enable it (required before creating App Passwords)
 
-1. In Twilio Console, go to **Account** (top-left menu)
-2. Copy:
-   - **Account SID** 🔑 `TWILIO_ACCOUNT_SID`
-   - **Auth Token** 🔑 `TWILIO_AUTH_TOKEN`
+### Step 2: Create a Gmail App Password
 
-### Step 3: Set Up WhatsApp Sandbox
+> An App Password is a 16-character code that lets apps access Gmail without your real password.
 
-1. Go to **Messaging** → **Services**
-2. Click **Create Messaging Service** → Enter name → Click **Create**
-3. Go to **Messaging** → **Try it out** → **Send a WhatsApp message**
-4. Select the service you just created
-5. Use the **Sandbox** number shown (e.g., `whatsapp:+14155238886`)
-6. Add your number to the sandbox:
-   - Send `join winter-hanger` to the Twilio number
-   - Twilio will confirm
+1. Go to **[myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)**
+2. In the "App name" field type: `Janhavi Counselling Website`
+3. Click **Create**
+4. Google will show a 16-character password like: `abcd efgh ijkl mnop`
+5. Copy it immediately (shown only once)
 
-### Twilio Environment Variables
+### Step 3: Set Environment Variables
 
 ```env
-TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-TWILIO_AUTH_TOKEN=your_auth_token_here
-TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886  # Twilio sandbox or your business number
-ADMIN_WHATSAPP_NUMBER=+919876543210  # Your phone (admin gets notifications)
+GMAIL_USER=your-gmail@gmail.com          # The Gmail account sending emails
+GMAIL_APP_PASSWORD=abcdefghijklmnop      # 16-char App Password (no spaces)
+ADMIN_EMAIL=your-gmail@gmail.com         # Where admin notifications are sent (can be same)
 ```
 
-> **India Format:** Use country code +91 for Indian numbers (e.g., `+919876543210`)
+> **Tip:** You can use Janhavi's own Gmail for both `GMAIL_USER` and `ADMIN_EMAIL`, so she receives booking notifications directly in her inbox.
+
+### Gmail Free Tier Limits
+
+| Limit | Value |
+|---|---|
+| Free daily sending limit | 500 emails/day |
+| Monthly cost | ₹0 (completely free) |
+| Best for | Up to ~400 bookings/month |
+
+This is more than enough for a counselling practice.
 
 ---
 
 ## Complete `.env.local` Template
 
-Create a file named `.env.local` in the project root and add all keys:
+Create a file named `.env.local` in the project root and paste this (fill in the blanks):
 
 ```env
-# ========== FIREBASE ==========
-NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSy_your_api_key_here
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
-NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abc123def456
+# ========== FIREBASE (your keys are already set below) ==========
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyD3ao40WBxgl_M1EVJ7Dg-UsOotTHaZX-0
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=therapy-with-janhavi.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=therapy-with-janhavi
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=therapy-with-janhavi.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=310683607077
+NEXT_PUBLIC_FIREBASE_APP_ID=1:310683607077:web:0f6907a9fd94b3156d5fcc
 
 # ========== RAZORPAY ==========
 # Use rzp_test_* for development, rzp_live_* for production
-NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_1234567890ABC
+NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxxxxxxx
 RAZORPAY_KEY_SECRET=your_razorpay_secret_key_here
 
-# ========== TWILIO WHATSAPP ==========
-TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-TWILIO_AUTH_TOKEN=your_twilio_auth_token_here
-TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
-ADMIN_WHATSAPP_NUMBER=+919876543210
+# ========== GMAIL EMAIL NOTIFICATIONS (free) ==========
+GMAIL_USER=your-gmail@gmail.com
+GMAIL_APP_PASSWORD=your16charapppassword
+ADMIN_EMAIL=your-gmail@gmail.com
 ```
 
 ---
@@ -242,14 +247,15 @@ cp .env.local.example .env.local
 - Check Razorpay key format (starts with `rzp_test_` or `rzp_live_`)
 - Verify admin phone number is correct
 
-### WhatsApp Not Sending
-- Admin number format: `+919876543210` (with +91 for India)
-- Verify Twilio account has credits
-- Check `TWILIO_WHATSAPP_NUMBER` matches sandbox setup
+### Emails Not Sending
+- Make sure 2FA is enabled on the Gmail account first
+- Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) to regenerate the App Password
+- `GMAIL_APP_PASSWORD` should be 16 characters with no spaces (e.g., `abcdefghijklmnop`)
+- Check your spam/junk folder for the first few test emails
 
-### Email Verification Issues
-- Check Firebase auth email domain whitelist
-- Verify email sending is enabled in Firebase Console
+### Firebase Auth Not Working
+- Check Email/Password and Google sign-in are enabled in Firebase Console
+- Verify the authorized domain is added under Authentication → Settings → Authorized domains
 
 ---
 
@@ -258,4 +264,4 @@ cp .env.local.example .env.local
 Refer to official docs:
 - [Firebase Documentation](https://firebase.google.com/docs)
 - [Razorpay Integration Guide](https://razorpay.com/docs/)
-- [Twilio WhatsApp Guide](https://www.twilio.com/docs/whatsapp)
+- [Google App Passwords Help](https://support.google.com/accounts/answer/185833)
