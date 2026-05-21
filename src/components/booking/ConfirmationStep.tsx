@@ -15,9 +15,32 @@ const typeLabels: Record<string, string> = {
   individual: 'Individual Therapy',
   couple: 'Couple Therapy',
   family: 'Family Therapy',
+  sports: 'Sports Counselling',
 };
 
+function buildGoogleCalendarUrl(date: string, time: string, type: string): string {
+  try {
+    const dateObj = new Date(date);
+    const [timePart, meridiem] = time.split(' ');
+    let [hours, minutes] = timePart.split(':').map(Number);
+    if (meridiem === 'PM' && hours !== 12) hours += 12;
+    if (meridiem === 'AM' && hours === 12) hours = 0;
+    dateObj.setHours(hours, minutes || 0, 0, 0);
+    const endObj = new Date(dateObj.getTime() + 60 * 60 * 1000);
+    const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const title = encodeURIComponent(`${typeLabels[type] || type} Session – Therapy with Janhavi`);
+    const details = encodeURIComponent('Your counselling session with Janhavi Girish. A Google Meet link will be shared shortly.');
+    return `https://calendar.google.com/calendar/r/eventedit?text=${title}&dates=${fmt(dateObj)}/${fmt(endObj)}&details=${details}`;
+  } catch {
+    return 'https://calendar.google.com';
+  }
+}
+
 export default function ConfirmationStep({ bookingData }: Props) {
+  const calendarUrl = bookingData.date && bookingData.time
+    ? buildGoogleCalendarUrl(bookingData.date, bookingData.time, bookingData.therapyType)
+    : 'https://calendar.google.com';
+
   return (
     <div className="space-y-8 text-center max-w-lg mx-auto">
       {/* Success Animation */}
@@ -142,11 +165,15 @@ export default function ConfirmationStep({ bookingData }: Props) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.1 }}
-        className="flex flex-col sm:flex-row gap-4 justify-center pt-4"
+        className="flex flex-col sm:flex-row gap-4 justify-center pt-4 flex-wrap"
       >
         <Link href="/my-bookings" className="btn-primary">
           View My Bookings
         </Link>
+        <a href={calendarUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary flex items-center gap-2 justify-center">
+          <Calendar size={16} />
+          Add to Google Calendar
+        </a>
         <Link href="/" className="btn-secondary">
           Back to Home
         </Link>

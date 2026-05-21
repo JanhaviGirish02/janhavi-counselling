@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { format, addDays, startOfDay, isSameDay, isAfter, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isBefore } from 'date-fns';
+import { format, startOfDay, isSameDay, isAfter, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isBefore } from 'date-fns';
 import { BookingData } from '@/app/book/page';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface Props {
   bookingData: BookingData;
@@ -12,17 +14,32 @@ interface Props {
   onPrev: () => void;
 }
 
-const timeSlots = [
+const DEFAULT_TIME_SLOTS = [
   '10:00 AM', '11:00 AM', '12:00 PM',
   '2:00 PM', '3:00 PM', '4:00 PM',
   '5:00 PM', '6:00 PM', '7:00 PM',
 ];
+const DEFAULT_AVAILABLE_DAYS = [1, 2, 3, 4, 5, 6]; // Mon–Sat
 
-// Simulated booked slots (in production, fetch from Firebase)
+// Simulated booked slots
 const bookedSlots: Record<string, string[]> = {};
 
 export default function DateTimeStep({ bookingData, updateBookingData, onNext, onPrev }: Props) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [timeSlots, setTimeSlots] = useState<string[]>(DEFAULT_TIME_SLOTS);
+  const [availableDays, setAvailableDays] = useState<number[]>(DEFAULT_AVAILABLE_DAYS);
+  const [blockedDates, setBlockedDates] = useState<string[]>([]);
+
+  useEffect(() => {
+    getDoc(doc(db, 'settings', 'availability')).then((snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.timeSlots?.length) setTimeSlots(data.timeSlots);
+        if (data.availableDays?.length) setAvailableDays(data.availableDays);
+        if (data.blockedDates) setBlockedDates(data.blockedDates);
+      }
+    }).catch(() => {});
+  }, []);
   const today = startOfDay(new Date());
   const maxDate = addMonths(today, 2);
 
@@ -35,13 +52,14 @@ export default function DateTimeStep({ bookingData, updateBookingData, onNext, o
     if (!bookingData.date) return timeSlots;
     const booked = bookedSlots[bookingData.date] || [];
     return timeSlots.filter((slot) => !booked.includes(slot));
-  }, [bookingData.date]);
+  }, [bookingData.date, timeSlots]);
 
   const isDateAvailable = (date: Date) => {
     if (isBefore(date, today)) return false;
     if (isAfter(date, maxDate)) return false;
-    // No sessions on Sundays
-    if (getDay(date) === 0) return false;
+    if (!availableDays.includes(getDay(date))) return false;
+    const dateStr = format(date, 'yyyy-MM-dd');
+    if (blockedDates.includes(dateStr)) return false;
     return true;
   };
 

@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, Send, MapPin, Clock, MessageCircle } from 'lucide-react';
+import { Mail, Send, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Contact() {
@@ -18,10 +18,18 @@ export default function Contact() {
     setIsSubmitting(true);
     
     try {
-      // In production, send to API route
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Message sent! I\'ll get back to you soon.');
-      setFormData({ name: '', email: '', message: '' });
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Message sent! I\'ll get back to you soon.');
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        throw new Error(data.error || 'Failed to send');
+      }
     } catch {
       toast.error('Something went wrong. Please try again.');
     } finally {
@@ -63,30 +71,8 @@ export default function Contact() {
                 </div>
                 <div>
                   <h4 className="font-medium text-charcoal">Email</h4>
-                  <p className="text-charcoal-lighter text-sm mt-1">janhavi@example.com</p>
-                  <p className="text-xs text-charcoal-lighter mt-0.5">Response within 24-48 hours</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-sage-100 flex items-center justify-center flex-shrink-0">
-                  <MessageCircle size={20} className="text-sage-600" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-charcoal">WhatsApp</h4>
-                  <p className="text-charcoal-lighter text-sm mt-1">+91 XXXXX XXXXX</p>
-                  <p className="text-xs text-charcoal-lighter mt-0.5">For booking inquiries</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-sage-100 flex items-center justify-center flex-shrink-0">
-                  <MapPin size={20} className="text-sage-600" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-charcoal">Location</h4>
-                  <p className="text-charcoal-lighter text-sm mt-1">Bangalore, India</p>
-                  <p className="text-xs text-charcoal-lighter mt-0.5">Online sessions — accessible anywhere</p>
+                  <p className="text-charcoal-lighter text-sm mt-1">janhavigirish@gmail.com</p>
+                  <p className="text-xs text-charcoal-lighter mt-0.5">Response within 24â€“48 hours</p>
                 </div>
               </div>
 
@@ -96,8 +82,8 @@ export default function Contact() {
                 </div>
                 <div>
                   <h4 className="font-medium text-charcoal">Session Timings</h4>
-                  <p className="text-charcoal-lighter text-sm mt-1">Monday – Saturday</p>
-                  <p className="text-xs text-charcoal-lighter mt-0.5">10:00 AM – 8:00 PM IST</p>
+                  <p className="text-charcoal-lighter text-sm mt-1">Monday â€“ Saturday</p>
+                  <p className="text-xs text-charcoal-lighter mt-0.5">10:00 AM â€“ 8:00 PM IST</p>
                 </div>
               </div>
             </div>
@@ -105,7 +91,7 @@ export default function Contact() {
             {/* Confidentiality Note */}
             <div className="p-4 bg-sage-50 rounded-2xl border border-sage-100">
               <p className="text-xs text-sage-600 leading-relaxed">
-                🔒 <strong>Confidentiality Promise:</strong> All communications are strictly confidential. 
+                ðŸ”’ <strong>Confidentiality Promise:</strong> All communications are strictly confidential. 
                 Your privacy and emotional safety are my priority.
               </p>
             </div>
@@ -119,58 +105,50 @@ export default function Contact() {
           >
             <form onSubmit={handleSubmit} className="card space-y-5">
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Name</label>
+                <label className="text-sm font-medium text-charcoal block mb-2">Name</label>
                 <input
                   type="text"
+                  required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="input-field"
                   placeholder="Your name"
-                  required
+                  className="input-field"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Email</label>
+                <label className="text-sm font-medium text-charcoal block mb-2">Email</label>
                 <input
                   type="email"
+                  required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="input-field"
                   placeholder="your@email.com"
-                  required
+                  className="input-field"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Message</label>
+                <label className="text-sm font-medium text-charcoal block mb-2">Message</label>
                 <textarea
+                  required
+                  rows={5}
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="input-field min-h-[120px] resize-none"
-                  placeholder="How can I help you?"
-                  required
+                  placeholder="What would you like to know?"
+                  className="input-field resize-none"
                 />
               </div>
-
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isSubmitting ? (
-                  <span>Sending...</span>
+                  <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <>
-                    <Send size={18} />
-                    Send Message
-                  </>
+                  <Send size={18} />
                 )}
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </button>
-
-              <p className="text-xs text-charcoal-lighter text-center">
-                I typically respond within 24-48 hours during working days.
-              </p>
             </form>
           </motion.div>
         </div>
@@ -178,3 +156,4 @@ export default function Contact() {
     </section>
   );
 }
+

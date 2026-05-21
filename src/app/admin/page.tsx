@@ -1,15 +1,18 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
-import { 
-  Calendar, Users, CreditCard, Clock, 
-  CheckCircle, XCircle, RefreshCw, BarChart3,
-  MessageCircle, Settings, Bell
+import {
+  Calendar, Users, Clock,
+  CheckCircle, XCircle, BarChart3,
+  MessageCircle, Settings, Bell, Video,
+  Save, Plus, Trash2, Link as LinkIcon,
 } from 'lucide-react';
 import Link from 'next/link';
-import { collection, query, orderBy, getDocs, doc, updateDoc } from 'firebase/firestore';
+import {
+  collection, query, orderBy, getDocs, doc, updateDoc, setDoc, getDoc,
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import toast from 'react-hot-toast';
 
@@ -26,12 +29,35 @@ interface Booking {
   mainConcern: string;
   preferredLanguage: string;
   createdAt: string;
+  meetLink?: string;
 }
+
+interface AvailabilitySettings {
+  availableDays: number[];
+  timeSlots: string[];
+  blockedDates: string[];
+}
+
+interface GeneralSettings {
+  adminEmail: string;
+  instagramUrl: string;
+  sessionTimings: string;
+  noticeBanner: string;
+}
+
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+const DEFAULT_TIME_SLOTS = [
+  '10:00 AM', '11:00 AM', '12:00 PM',
+  '2:00 PM', '3:00 PM', '4:00 PM',
+  '5:00 PM', '6:00 PM', '7:00 PM',
+];
 
 const typeLabels: Record<string, string> = {
   individual: 'Individual',
   couple: 'Couple',
   family: 'Family',
+  sports: 'Sports',
 };
 
 export default function AdminDashboard() {
@@ -41,41 +67,138 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
+  const [meetLinkInputs, setMeetLinkInputs] = useState<Record<string, string>>({});
+  const [savingMeetLink, setSavingMeetLink] = useState<string | null>(null);
+
+  const [availability, setAvailability] = useState<AvailabilitySettings>({
+    availableDays: [1, 2, 3, 4, 5, 6],
+    timeSlots: DEFAULT_TIME_SLOTS,
+    blockedDates: [],
+  });
+  const [newSlot, setNewSlot] = useState('');
+  const [newBlockedDate, setNewBlockedDate] = useState('');
+  const [savingAvailability, setSavingAvailability] = useState(false);
+
+  const [generalSettings, setGeneralSettings] = useState<GeneralSettings>({
+    adminEmail: '',
+    instagramUrl: '',
+    sessionTimings: 'Monday \u2013 Saturday, 10:00 AM \u2013 8:00 PM IST',
+    noticeBanner: '',
+  });
+  const [savingSettings, setSavingSettings] = useState(false);
+
   useEffect(() => {
-    async function fetchBookings() {
+    async function init() {
       try {
         const q = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Booking[];
+        const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as Booking[];
         setBookings(data);
-      } catch (error) {
-        console.error('Error fetching bookings:', error);
+        const meets: Record<string, string> = {};
+        data.forEach((b) => { meets[b.id] = b.meetLink || ''; });
+        setMeetLinkInputs(meets);
+        const availDoc = await getDoc(doc(db, 'settings', 'availability'));
+        if (availDoc.exists()) setAvailability(availDoc.data() as AvailabilitySettings);
+        const genDoc = await getDoc(doc(db, 'settings', 'general'));
+        if (genDoc.exists()) setGeneralSettings(genDoc.data() as GeneralSettings);
+      } catch (err) {
+        console.error('Admin init error:', err);
       } finally {
         setIsLoading(false);
       }
     }
-
-    if (!loading && isAdmin) {
-      fetchBookings();
-    } else if (!loading) {
-      setIsLoading(false);
-    }
+    if (!loading && isAdmin) { init(); }
+    else if (!loading) { setIsLoading(false); }
   }, [loading, isAdmin]);
 
   const updateBookingStatus = async (bookingId: string, status: string) => {
     try {
       await updateDoc(doc(db, 'bookings', bookingId), { status });
-      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
-      toast.success(`Booking ${status}`);
-    } catch (error) {
+      setBookings((prev) => prev.map((b) => (b.id === bookingId ? { ...b, status } : b)));
+      toast.success(`Booking marked as ${status}`);
+    } catch {
       toast.error('Failed to update booking');
     }
   };
 
-  if (loading) {
+  const saveMeetLink = async (bookingId: string) => {
+    const link = meetLinkInputs[bookingId] || '';
+    setSavingMeetLink(bookingId);
+    try {
+      await updateDoc(doc(db, 'bookings', bookingId), { meetLink: link });
+      setBookings((prev) => prev.map((b) => (b.id === bookingId ? { ...b, meetLink: link } : b)));
+      const booking = bookings.find((b) => b.id === bookingId);
+      if (booking?.email && link) {
+        await fetch('/api/send-meet-link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: booking.email, fullName: booking.fullName, meetLink: link, date: booking.date, time: booking.time }),
+        });
+      }
+      toast.success('Meet link saved & emailed to client');
+    } catch {
+      toast.error('Failed to save meet link');
+    } finally {
+      setSavingMeetLink(null);
+    }
+  };
+
+  const saveAvailability = async () => {
+    setSavingAvailability(true);
+    try {
+      await setDoc(doc(db, 'settings', 'availability'), availability);
+      toast.success('Availability saved');
+    } catch {
+      toast.error('Failed to save availability');
+    } finally {
+      setSavingAvailability(false);
+    }
+  };
+
+  const saveGeneralSettings = async () => {
+    setSavingSettings(true);
+    try {
+      await setDoc(doc(db, 'settings', 'general'), generalSettings);
+      toast.success('Settings saved');
+    } catch {
+      toast.error('Failed to save settings');
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
+  const toggleDay = (day: number) => {
+    setAvailability((prev) => ({
+      ...prev,
+      availableDays: prev.availableDays.includes(day)
+        ? prev.availableDays.filter((d) => d !== day)
+        : [...prev.availableDays, day].sort(),
+    }));
+  };
+
+  const addTimeSlot = () => {
+    const slot = newSlot.trim();
+    if (!slot || availability.timeSlots.includes(slot)) return;
+    setAvailability((prev) => ({ ...prev, timeSlots: [...prev.timeSlots, slot] }));
+    setNewSlot('');
+  };
+
+  const removeTimeSlot = (slot: string) => {
+    setAvailability((prev) => ({ ...prev, timeSlots: prev.timeSlots.filter((s) => s !== slot) }));
+  };
+
+  const addBlockedDate = () => {
+    const d = newBlockedDate.trim();
+    if (!d || availability.blockedDates.includes(d)) return;
+    setAvailability((prev) => ({ ...prev, blockedDates: [...prev.blockedDates, d].sort() }));
+    setNewBlockedDate('');
+  };
+
+  const removeBlockedDate = (d: string) => {
+    setAvailability((prev) => ({ ...prev, blockedDates: prev.blockedDates.filter((bd) => bd !== d) }));
+  };
+
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen pt-24 flex items-center justify-center bg-beige-50">
         <div className="w-8 h-8 border-2 border-sage-300 border-t-transparent rounded-full animate-spin" />
@@ -89,12 +212,8 @@ export default function AdminDashboard() {
         <div className="card max-w-md text-center space-y-4">
           <XCircle size={40} className="text-red-400 mx-auto" />
           <h2 className="font-heading text-xl font-semibold">Access Denied</h2>
-          <p className="text-charcoal-lighter text-sm">
-            This page is only accessible to administrators.
-          </p>
-          <Link href="/" className="btn-primary inline-block">
-            Go Home
-          </Link>
+          <p className="text-charcoal-lighter text-sm">This page is only accessible to administrators.</p>
+          <Link href="/" className="btn-primary inline-block">Go Home</Link>
         </div>
       </div>
     );
@@ -102,14 +221,15 @@ export default function AdminDashboard() {
 
   const stats = {
     total: bookings.length,
-    confirmed: bookings.filter(b => b.status === 'confirmed').length,
-    completed: bookings.filter(b => b.status === 'completed').length,
-    cancelled: bookings.filter(b => b.status === 'cancelled').length,
+    confirmed: bookings.filter((b) => b.status === 'confirmed').length,
+    completed: bookings.filter((b) => b.status === 'completed').length,
+    cancelled: bookings.filter((b) => b.status === 'cancelled').length,
   };
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'bookings', label: 'Bookings', icon: Calendar },
+    { id: 'availability', label: 'Availability', icon: Clock },
     { id: 'clients', label: 'Clients', icon: Users },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
@@ -117,37 +237,21 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen pt-24 pb-16 bg-beige-50">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-8"
-        >
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-8">
           <div>
             <h1 className="font-heading text-3xl font-bold text-charcoal">Admin Dashboard</h1>
             <p className="text-charcoal-lighter mt-1">Manage your practice</p>
           </div>
-          <div className="flex items-center gap-3">
-            <button className="p-2.5 rounded-xl bg-white border border-beige-200 hover:bg-beige-50 transition-colors">
-              <Bell size={18} className="text-charcoal-lighter" />
-            </button>
-          </div>
+          <button className="p-2.5 rounded-xl bg-white border border-beige-200 hover:bg-beige-50 transition-colors">
+            <Bell size={18} className="text-charcoal-lighter" />
+          </button>
         </motion.div>
 
-        {/* Tabs */}
         <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
           {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'bg-sage-300 text-white shadow-md'
-                  : 'bg-white text-charcoal-light hover:bg-beige-100 border border-beige-200'
-              }`}
-            >
-              <tab.icon size={16} />
-              {tab.label}
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-sage-300 text-white shadow-md' : 'bg-white text-charcoal-light hover:bg-beige-100 border border-beige-200'}`}>
+              <tab.icon size={16} />{tab.label}
             </button>
           ))}
         </div>
@@ -155,7 +259,6 @@ export default function AdminDashboard() {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-8">
-            {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 { label: 'Total Bookings', value: stats.total, icon: Calendar, color: 'text-sage-500 bg-sage-100' },
@@ -163,12 +266,7 @@ export default function AdminDashboard() {
                 { label: 'Completed', value: stats.completed, icon: Clock, color: 'text-blue-600 bg-blue-100' },
                 { label: 'Cancelled', value: stats.cancelled, icon: XCircle, color: 'text-red-500 bg-red-100' },
               ].map((stat) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="card"
-                >
+                <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-charcoal-lighter">{stat.label}</p>
@@ -181,19 +279,11 @@ export default function AdminDashboard() {
                 </motion.div>
               ))}
             </div>
-
-            {/* Recent Bookings */}
             <div className="card">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="font-heading text-lg font-semibold">Recent Bookings</h2>
-                <button
-                  onClick={() => setActiveTab('bookings')}
-                  className="text-sm text-sage-500 font-medium hover:underline"
-                >
-                  View All
-                </button>
+                <button onClick={() => setActiveTab('bookings')} className="text-sm text-sage-500 font-medium hover:underline">View All</button>
               </div>
-              
               {bookings.length === 0 ? (
                 <p className="text-charcoal-lighter text-center py-8">No bookings yet</p>
               ) : (
@@ -203,8 +293,7 @@ export default function AdminDashboard() {
                       <tr className="text-left text-charcoal-lighter border-b border-beige-100">
                         <th className="pb-3 font-medium">Client</th>
                         <th className="pb-3 font-medium">Type</th>
-                        <th className="pb-3 font-medium">Date</th>
-                        <th className="pb-3 font-medium">Time</th>
+                        <th className="pb-3 font-medium">Date &amp; Time</th>
                         <th className="pb-3 font-medium">Status</th>
                         <th className="pb-3 font-medium">Actions</th>
                       </tr>
@@ -213,51 +302,23 @@ export default function AdminDashboard() {
                       {bookings.slice(0, 10).map((booking) => (
                         <tr key={booking.id} className="hover:bg-beige-50">
                           <td className="py-3">
-                            <div>
-                              <p className="font-medium text-charcoal">{booking.fullName}</p>
-                              <p className="text-xs text-charcoal-lighter">{booking.phone}</p>
-                            </div>
+                            <p className="font-medium text-charcoal">{booking.fullName}</p>
+                            <p className="text-xs text-charcoal-lighter">{booking.email}</p>
                           </td>
                           <td className="py-3">{typeLabels[booking.therapyType] || booking.therapyType}</td>
-                          <td className="py-3">{booking.date}</td>
-                          <td className="py-3">{booking.time}</td>
+                          <td className="py-3">{booking.date} &middot; {booking.time}</td>
                           <td className="py-3">
-                            <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                              booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                              booking.status === 'completed' ? 'bg-blue-100 text-blue-700' :
-                              booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                              'bg-gray-100 text-gray-700'
-                            }`}>
-                              {booking.status}
-                            </span>
+                            <span className={`text-xs font-medium px-2 py-1 rounded-full ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' : booking.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>{booking.status}</span>
                           </td>
                           <td className="py-3">
                             <div className="flex items-center gap-2">
                               {booking.status === 'confirmed' && (
                                 <>
-                                  <button
-                                    onClick={() => updateBookingStatus(booking.id, 'completed')}
-                                    className="p-1.5 rounded-lg hover:bg-green-100 text-green-600 transition-colors"
-                                    title="Mark Complete"
-                                  >
-                                    <CheckCircle size={14} />
-                                  </button>
-                                  <button
-                                    onClick={() => updateBookingStatus(booking.id, 'cancelled')}
-                                    className="p-1.5 rounded-lg hover:bg-red-100 text-red-500 transition-colors"
-                                    title="Cancel"
-                                  >
-                                    <XCircle size={14} />
-                                  </button>
+                                  <button onClick={() => updateBookingStatus(booking.id, 'completed')} className="p-1.5 rounded-lg hover:bg-green-100 text-green-600 transition-colors" title="Mark Complete"><CheckCircle size={14} /></button>
+                                  <button onClick={() => updateBookingStatus(booking.id, 'cancelled')} className="p-1.5 rounded-lg hover:bg-red-100 text-red-500 transition-colors" title="Cancel"><XCircle size={14} /></button>
                                 </>
                               )}
-                              <button
-                                onClick={() => setSelectedBooking(booking)}
-                                className="p-1.5 rounded-lg hover:bg-beige-100 text-charcoal-lighter transition-colors"
-                                title="View Details"
-                              >
-                                <MessageCircle size={14} />
-                              </button>
+                              <button onClick={() => setSelectedBooking(booking)} className="p-1.5 rounded-lg hover:bg-beige-100 text-charcoal-lighter transition-colors" title="View Details"><MessageCircle size={14} /></button>
                             </div>
                           </td>
                         </tr>
@@ -273,57 +334,58 @@ export default function AdminDashboard() {
         {/* Bookings Tab */}
         {activeTab === 'bookings' && (
           <div className="card">
-            <h2 className="font-heading text-lg font-semibold mb-6">All Bookings</h2>
+            <h2 className="font-heading text-lg font-semibold mb-6">All Bookings ({bookings.length})</h2>
             {bookings.length === 0 ? (
-              <p className="text-charcoal-lighter text-center py-8">No bookings yet. They will appear here once clients book sessions.</p>
+              <p className="text-charcoal-lighter text-center py-8">No bookings yet.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {bookings.map((booking) => (
-                  <div key={booking.id} className="p-4 border border-beige-200 rounded-xl hover:bg-beige-50 transition-colors">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-charcoal">{booking.fullName}</p>
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                            booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                            booking.status === 'completed' ? 'bg-blue-100 text-blue-700' :
-                            'bg-red-100 text-red-700'
-                          }`}>
-                            {booking.status}
-                          </span>
+                  <div key={booking.id} className="p-4 border border-beige-200 rounded-xl">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-medium text-charcoal">{booking.fullName}</p>
+                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' : booking.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>{booking.status}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2 text-xs text-charcoal-lighter">
+                            <span>{typeLabels[booking.therapyType] || booking.therapyType}</span>
+                            <span>&bull;</span>
+                            <span>{booking.date} &middot; {booking.time}</span>
+                            <span>&bull;</span>
+                            <span>{booking.email}</span>
+                          </div>
+                          {booking.mainConcern && <p className="text-xs text-charcoal-lighter line-clamp-1">Concern: {booking.mainConcern}</p>}
                         </div>
-                        <div className="flex flex-wrap gap-3 text-xs text-charcoal-lighter">
-                          <span>{typeLabels[booking.therapyType]}</span>
-                          <span>•</span>
-                          <span>{booking.date}</span>
-                          <span>•</span>
-                          <span>{booking.time}</span>
-                          <span>•</span>
-                          <span>{booking.phone}</span>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {booking.status === 'confirmed' && (
+                            <>
+                              <button onClick={() => updateBookingStatus(booking.id, 'completed')} className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors">Complete</button>
+                              <button onClick={() => updateBookingStatus(booking.id, 'cancelled')} className="text-xs px-3 py-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors">Cancel</button>
+                            </>
+                          )}
+                          <button onClick={() => setSelectedBooking(booking)} className="text-xs px-3 py-1.5 bg-beige-100 text-charcoal rounded-lg hover:bg-beige-200 transition-colors">Details</button>
                         </div>
-                        {booking.mainConcern && (
-                          <p className="text-xs text-charcoal-lighter mt-1 line-clamp-1">
-                            Concern: {booking.mainConcern}
-                          </p>
-                        )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        {booking.status === 'confirmed' && (
-                          <>
-                            <button
-                              onClick={() => updateBookingStatus(booking.id, 'completed')}
-                              className="text-xs px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
-                            >
-                              Complete
-                            </button>
-                            <button
-                              onClick={() => updateBookingStatus(booking.id, 'cancelled')}
-                              className="text-xs px-3 py-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
-                            >
-                              Cancel
-                            </button>
-                          </>
+                      <div className="flex items-center gap-2 pt-2 border-t border-beige-100">
+                        <Video size={14} className="text-sage-400 flex-shrink-0" />
+                        <input
+                          type="url"
+                          placeholder="Paste Google Meet link here..."
+                          value={meetLinkInputs[booking.id] || ''}
+                          onChange={(e) => setMeetLinkInputs((prev) => ({ ...prev, [booking.id]: e.target.value }))}
+                          className="flex-1 text-xs border border-beige-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-sage-300 bg-white"
+                        />
+                        {booking.meetLink && (
+                          <a href={booking.meetLink} target="_blank" rel="noopener noreferrer" className="text-sage-500 hover:text-sage-600" title="Open link"><LinkIcon size={14} /></a>
                         )}
+                        <button
+                          onClick={() => saveMeetLink(booking.id)}
+                          disabled={savingMeetLink === booking.id}
+                          className="text-xs px-3 py-1.5 bg-sage-300 text-white rounded-lg hover:bg-sage-400 transition-colors disabled:opacity-50"
+                        >
+                          {savingMeetLink === booking.id ? 'Saving...' : 'Save & Email'}
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -333,13 +395,100 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* Availability Tab */}
+        {activeTab === 'availability' && (
+          <div className="space-y-6">
+            <div className="card">
+              <h2 className="font-heading text-lg font-semibold mb-4">Available Days</h2>
+              <p className="text-sm text-charcoal-lighter mb-4">Select which days clients can book sessions.</p>
+              <div className="flex flex-wrap gap-2">
+                {DAY_NAMES.map((name, idx) => (
+                  <button key={idx} onClick={() => toggleDay(idx)}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${availability.availableDays.includes(idx) ? 'bg-sage-300 text-white' : 'bg-beige-100 text-charcoal-light border border-beige-200'}`}>
+                    {name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="card">
+              <h2 className="font-heading text-lg font-semibold mb-4">Available Time Slots</h2>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {availability.timeSlots.map((slot) => (
+                  <div key={slot} className="flex items-center gap-1.5 bg-sage-50 border border-sage-200 rounded-lg px-3 py-1.5">
+                    <span className="text-sm text-charcoal">{slot}</span>
+                    <button onClick={() => removeTimeSlot(slot)} className="text-red-400 hover:text-red-600"><Trash2 size={12} /></button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input type="text" placeholder="e.g. 9:00 AM" value={newSlot} onChange={(e) => setNewSlot(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addTimeSlot()}
+                  className="flex-1 border border-beige-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-sage-300" />
+                <button onClick={addTimeSlot} className="flex items-center gap-1 px-4 py-2 bg-sage-300 text-white rounded-xl text-sm hover:bg-sage-400 transition-colors">
+                  <Plus size={14} /> Add
+                </button>
+              </div>
+            </div>
+
+            <div className="card">
+              <h2 className="font-heading text-lg font-semibold mb-4">Blocked / Holiday Dates</h2>
+              <p className="text-sm text-charcoal-lighter mb-4">Dates when no sessions are available.</p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {availability.blockedDates.map((d) => (
+                  <div key={d} className="flex items-center gap-1.5 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">
+                    <span className="text-sm text-charcoal">{d}</span>
+                    <button onClick={() => removeBlockedDate(d)} className="text-red-400 hover:text-red-600"><Trash2 size={12} /></button>
+                  </div>
+                ))}
+                {availability.blockedDates.length === 0 && <p className="text-sm text-charcoal-lighter">No blocked dates.</p>}
+              </div>
+              <div className="flex gap-2">
+                <input type="date" value={newBlockedDate} onChange={(e) => setNewBlockedDate(e.target.value)}
+                  className="flex-1 border border-beige-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-sage-300" />
+                <button onClick={addBlockedDate} className="flex items-center gap-1 px-4 py-2 bg-red-100 text-red-700 rounded-xl text-sm hover:bg-red-200 transition-colors">
+                  <Plus size={14} /> Block Date
+                </button>
+              </div>
+            </div>
+
+            <button onClick={saveAvailability} disabled={savingAvailability}
+              className="flex items-center gap-2 px-6 py-3 bg-sage-300 text-white rounded-xl font-medium hover:bg-sage-400 transition-colors disabled:opacity-50">
+              <Save size={16} />{savingAvailability ? 'Saving...' : 'Save Availability'}
+            </button>
+          </div>
+        )}
+
         {/* Clients Tab */}
         {activeTab === 'clients' && (
           <div className="card">
             <h2 className="font-heading text-lg font-semibold mb-6">Client Directory</h2>
-            <p className="text-charcoal-lighter text-center py-8">
-              Client information will populate here as bookings are made.
-            </p>
+            {bookings.length === 0 ? (
+              <p className="text-charcoal-lighter text-center py-8">No clients yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-charcoal-lighter border-b border-beige-100">
+                      <th className="pb-3 font-medium">Name</th>
+                      <th className="pb-3 font-medium">Email</th>
+                      <th className="pb-3 font-medium">Phone</th>
+                      <th className="pb-3 font-medium">Sessions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-beige-100">
+                    {Array.from(new Map(bookings.map((b) => [b.email, b])).values()).map((b) => (
+                      <tr key={b.email} className="hover:bg-beige-50">
+                        <td className="py-3 font-medium text-charcoal">{b.fullName}</td>
+                        <td className="py-3 text-charcoal-lighter">{b.email}</td>
+                        <td className="py-3 text-charcoal-lighter">{b.phone}</td>
+                        <td className="py-3">{bookings.filter((bk) => bk.email === b.email).length}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
@@ -347,39 +496,44 @@ export default function AdminDashboard() {
         {activeTab === 'settings' && (
           <div className="space-y-6">
             <div className="card">
-              <h2 className="font-heading text-lg font-semibold mb-4">Practice Settings</h2>
+              <h2 className="font-heading text-lg font-semibold mb-6">Practice Settings</h2>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-charcoal mb-1.5">Working Hours</label>
-                  <p className="text-sm text-charcoal-lighter">Monday – Saturday, 10:00 AM – 8:00 PM IST</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-charcoal mb-1.5">Session Duration</label>
-                  <p className="text-sm text-charcoal-lighter">60 minutes</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-charcoal mb-1.5">Notifications</label>
-                  <p className="text-sm text-charcoal-lighter">WhatsApp + Email notifications on each booking</p>
-                </div>
+                {[
+                  { label: 'Admin / Contact Email', key: 'adminEmail', type: 'email', placeholder: 'janhavigirish@gmail.com' },
+                  { label: 'Instagram Profile URL', key: 'instagramUrl', type: 'url', placeholder: 'https://instagram.com/yourhandle' },
+                  { label: 'Session Timings (shown on website)', key: 'sessionTimings', type: 'text', placeholder: 'Monday \u2013 Saturday, 10:00 AM \u2013 8:00 PM IST' },
+                  { label: 'Notice Banner (leave blank to hide)', key: 'noticeBanner', type: 'text', placeholder: 'e.g. Out of office until Jan 10' },
+                ].map(({ label, key, type, placeholder }) => (
+                  <div key={key}>
+                    <label className="block text-sm font-medium text-charcoal mb-1.5">{label}</label>
+                    <input
+                      type={type}
+                      value={generalSettings[key as keyof GeneralSettings]}
+                      onChange={(e) => setGeneralSettings((p) => ({ ...p, [key]: e.target.value }))}
+                      placeholder={placeholder}
+                      className="w-full border border-beige-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-sage-300"
+                    />
+                  </div>
+                ))}
+                <button onClick={saveGeneralSettings} disabled={savingSettings}
+                  className="flex items-center gap-2 px-6 py-3 bg-sage-300 text-white rounded-xl font-medium hover:bg-sage-400 transition-colors disabled:opacity-50">
+                  <Save size={16} />{savingSettings ? 'Saving...' : 'Save Settings'}
+                </button>
               </div>
             </div>
-            
+
             <div className="card">
               <h2 className="font-heading text-lg font-semibold mb-4">Integration Status</h2>
               <div className="space-y-3">
                 {[
                   { name: 'Razorpay Payment', status: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ? 'Connected' : 'Not configured' },
-                  { name: 'WhatsApp Notifications', status: 'Configure in .env' },
-                  { name: 'Google Calendar', status: 'Configure in .env' },
                   { name: 'Firebase', status: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? 'Connected' : 'Not configured' },
-                ].map((integration) => (
-                  <div key={integration.name} className="flex items-center justify-between py-2 border-b border-beige-100 last:border-0">
-                    <span className="text-sm text-charcoal">{integration.name}</span>
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                      integration.status === 'Connected' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {integration.status}
-                    </span>
+                  { name: 'Email (Gmail SMTP)', status: 'Configure GMAIL_USER + GMAIL_APP_PASSWORD in .env.local' },
+                  { name: 'Google Meet', status: 'Set meet link per booking in Bookings tab' },
+                ].map((item) => (
+                  <div key={item.name} className="flex items-center justify-between py-2 border-b border-beige-100 last:border-0">
+                    <span className="text-sm text-charcoal">{item.name}</span>
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${item.status === 'Connected' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{item.status}</span>
                   </div>
                 ))}
               </div>
@@ -387,54 +541,39 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Booking Detail Modal */}
         {selectedBooking && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="card max-w-lg w-full max-h-[80vh] overflow-y-auto"
-            >
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="card max-w-lg w-full max-h-[85vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-heading text-lg font-semibold">Booking Details</h3>
-                <button
-                  onClick={() => setSelectedBooking(null)}
-                  className="p-2 hover:bg-beige-100 rounded-lg transition-colors"
-                >
-                  <XCircle size={18} />
-                </button>
+                <button onClick={() => setSelectedBooking(null)} className="p-2 hover:bg-beige-100 rounded-lg transition-colors"><XCircle size={18} /></button>
               </div>
               <div className="space-y-3 text-sm">
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-beige-50 rounded-lg">
-                    <p className="text-xs text-charcoal-lighter">Name</p>
-                    <p className="font-medium">{selectedBooking.fullName}</p>
-                  </div>
-                  <div className="p-3 bg-beige-50 rounded-lg">
-                    <p className="text-xs text-charcoal-lighter">Phone</p>
-                    <p className="font-medium">{selectedBooking.phone}</p>
-                  </div>
-                  <div className="p-3 bg-beige-50 rounded-lg">
-                    <p className="text-xs text-charcoal-lighter">Email</p>
-                    <p className="font-medium">{selectedBooking.email}</p>
-                  </div>
-                  <div className="p-3 bg-beige-50 rounded-lg">
-                    <p className="text-xs text-charcoal-lighter">Type</p>
-                    <p className="font-medium">{typeLabels[selectedBooking.therapyType]}</p>
-                  </div>
-                  <div className="p-3 bg-beige-50 rounded-lg">
-                    <p className="text-xs text-charcoal-lighter">Date</p>
-                    <p className="font-medium">{selectedBooking.date}</p>
-                  </div>
-                  <div className="p-3 bg-beige-50 rounded-lg">
-                    <p className="text-xs text-charcoal-lighter">Time</p>
-                    <p className="font-medium">{selectedBooking.time}</p>
-                  </div>
+                  {[
+                    { label: 'Name', value: selectedBooking.fullName },
+                    { label: 'Phone', value: selectedBooking.phone },
+                    { label: 'Email', value: selectedBooking.email },
+                    { label: 'Type', value: typeLabels[selectedBooking.therapyType] || selectedBooking.therapyType },
+                    { label: 'Date', value: selectedBooking.date },
+                    { label: 'Time', value: selectedBooking.time },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="p-3 bg-beige-50 rounded-lg">
+                      <p className="text-xs text-charcoal-lighter">{label}</p>
+                      <p className="font-medium">{value}</p>
+                    </div>
+                  ))}
                 </div>
                 {selectedBooking.mainConcern && (
                   <div className="p-3 bg-beige-50 rounded-lg">
                     <p className="text-xs text-charcoal-lighter">Main Concern</p>
                     <p className="font-medium mt-1">{selectedBooking.mainConcern}</p>
+                  </div>
+                )}
+                {selectedBooking.meetLink && (
+                  <div className="p-3 bg-sage-50 rounded-lg">
+                    <p className="text-xs text-charcoal-lighter">Meet Link</p>
+                    <a href={selectedBooking.meetLink} target="_blank" rel="noopener noreferrer" className="text-sage-500 font-medium text-xs break-all hover:underline">{selectedBooking.meetLink}</a>
                   </div>
                 )}
                 <div className="p-3 bg-beige-50 rounded-lg">

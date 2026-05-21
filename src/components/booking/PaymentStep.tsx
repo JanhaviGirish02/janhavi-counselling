@@ -18,12 +18,14 @@ const prices: Record<string, number> = {
   individual: 1500,
   couple: 3000,
   family: 4000,
+  sports: 1500,
 };
 
 const typeLabels: Record<string, string> = {
   individual: 'Individual Therapy',
   couple: 'Couple Therapy',
   family: 'Family Therapy',
+  sports: 'Sports Counselling',
 };
 
 export default function PaymentStep({ bookingData, updateBookingData, onNext, onPrev }: Props) {
@@ -79,6 +81,7 @@ export default function PaymentStep({ bookingData, updateBookingData, onNext, on
 
           const result = await verified.json();
           if (result.success) {
+            await saveBookingToFirestore(response.razorpay_payment_id, result.bookingId);
             updateBookingData({
               paymentId: response.razorpay_payment_id,
               bookingId: result.bookingId,
@@ -109,6 +112,56 @@ export default function PaymentStep({ bookingData, updateBookingData, onNext, on
     }
   };
 
+  const saveBookingToFirestore = async (paymentId: string, bookingId: string) => {
+    try {
+      const { collection, addDoc } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase');
+      if (!db || !(db as any).type) {
+        throw new Error('Firestore not configured');
+      }
+      await addDoc(collection(db, 'bookings'), {
+        ...bookingData,
+        paymentId,
+        bookingId,
+        userId: user?.uid || '',
+        userEmail: user?.email || bookingData.email,
+        status: 'confirmed',
+        meetLink: '',
+        createdAt: new Date().toISOString(),
+      });
+    } catch (e) {
+      // Fall back to localStorage if Firestore not configured
+      const stored = JSON.parse(localStorage.getItem('bookings') || '[]');
+      stored.unshift({
+        ...bookingData,
+        id: bookingId,
+        paymentId,
+        bookingId,
+        userId: user?.uid || '',
+        status: 'confirmed',
+        meetLink: '',
+        createdAt: new Date().toISOString(),
+      });
+      localStorage.setItem('bookings', JSON.stringify(stored));
+    }
+
+    // Send email notifications
+    try {
+      await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...bookingData,
+          paymentId,
+          bookingId,
+          userId: user?.uid,
+        }),
+      });
+    } catch (e) {
+      console.log('Email notification attempted');
+    }
+  };
+
   const simulatePayment = async () => {
     // Simulated payment for demo purposes
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -116,23 +169,7 @@ export default function PaymentStep({ bookingData, updateBookingData, onNext, on
     const mockPaymentId = `pay_demo_${Date.now()}`;
     const mockBookingId = `booking_${Date.now()}`;
     
-    // Save booking to API
-    try {
-      await fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...bookingData,
-          paymentId: mockPaymentId,
-          bookingId: mockBookingId,
-          userId: user?.uid,
-          status: 'confirmed',
-          createdAt: new Date().toISOString(),
-        }),
-      });
-    } catch (e) {
-      // Continue even if API fails in demo
-    }
+    await saveBookingToFirestore(mockPaymentId, mockBookingId);
 
     updateBookingData({
       paymentId: mockPaymentId,

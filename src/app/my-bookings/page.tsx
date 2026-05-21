@@ -22,6 +22,7 @@ const typeLabels: Record<string, string> = {
   individual: 'Individual Therapy',
   couple: 'Couple Therapy',
   family: 'Family Therapy',
+  sports: 'Sports Counselling',
 };
 
 const statusColors: Record<string, string> = {
@@ -51,9 +52,19 @@ export default function MyBookingsPage() {
           id: doc.id,
           ...doc.data(),
         })) as Booking[];
-        setBookings(bookingsData);
+
+        if (bookingsData.length > 0) {
+          setBookings(bookingsData);
+        } else {
+          // Fallback: load from localStorage (demo mode or Firestore not configured)
+          const stored = JSON.parse(localStorage.getItem('bookings') || '[]');
+          const userBookings = stored.filter((b: any) => b.userId === user.uid || !b.userId);
+          setBookings(userBookings);
+        }
       } catch (error) {
-        console.error('Error fetching bookings:', error);
+        // Firestore not configured — load from localStorage
+        const stored = JSON.parse(localStorage.getItem('bookings') || '[]');
+        setBookings(stored);
       } finally {
         setIsLoading(false);
       }

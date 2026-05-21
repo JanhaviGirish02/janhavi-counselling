@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import Link from 'next/link';
-import { Heart, Mail, Phone, Instagram, MapPin } from 'lucide-react';
+import { Heart, Mail, Instagram } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -34,18 +34,10 @@ export default function Footer() {
                 <Instagram size={18} />
               </a>
               <a
-                href="mailto:janhavi@example.com"
+                href="mailto:janhavigirish@gmail.com"
                 className="w-10 h-10 rounded-full bg-white/10 hover:bg-sage-300 flex items-center justify-center transition-colors"
               >
                 <Mail size={18} />
-              </a>
-              <a
-                href="https://wa.me/91XXXXXXXXXX"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/10 hover:bg-sage-300 flex items-center justify-center transition-colors"
-              >
-                <Phone size={18} />
               </a>
             </div>
           </div>
@@ -57,6 +49,7 @@ export default function Footer() {
               {[
                 { href: '/#about', label: 'About Me' },
                 { href: '/#therapy', label: 'Therapy Services' },
+                { href: '/#areas', label: 'Areas of Support' },
                 { href: '/#pricing', label: 'Pricing' },
                 { href: '/book', label: 'Book a Session' },
                 { href: '/#contact', label: 'Contact' },
@@ -78,14 +71,16 @@ export default function Footer() {
             <h3 className="font-heading text-lg font-semibold mb-4">Services</h3>
             <ul className="space-y-3">
               {[
-                'Individual Therapy',
-                'Couple Therapy',
-                'Family Therapy',
-                'Academic Stress Counselling',
-                'Online Sessions',
-              ].map((service) => (
-                <li key={service}>
-                  <span className="text-gray-400 text-sm">{service}</span>
+                { href: '/book?type=individual', label: 'Individual Therapy' },
+                { href: '/book?type=couple', label: 'Couple Therapy' },
+                { href: '/book?type=family', label: 'Family Therapy' },
+                { href: '/book?type=sports', label: 'Sports Counselling' },
+                { href: '/#areas', label: 'Academic Stress' },
+              ].map((s) => (
+                <li key={s.href}>
+                  <Link href={s.href} className="text-gray-400 hover:text-sage-300 transition-colors text-sm">
+                    {s.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -97,19 +92,11 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center gap-3 text-gray-400 text-sm">
                 <Mail size={16} className="text-sage-300" />
-                janhavi@example.com
-              </li>
-              <li className="flex items-center gap-3 text-gray-400 text-sm">
-                <Phone size={16} className="text-sage-300" />
-                +91 XXXXX XXXXX
-              </li>
-              <li className="flex items-center gap-3 text-gray-400 text-sm">
-                <MapPin size={16} className="text-sage-300" />
-                Bangalore, India
+                janhavigirish@gmail.com
               </li>
               <li className="flex items-start gap-3 text-gray-400 text-sm">
-                <span className="text-sage-300 text-xs mt-0.5">●</span>
-                Sessions: Mon–Sat, 10 AM – 8 PM
+                <span className="text-sage-300 text-xs mt-0.5">â—</span>
+                Sessions: Monâ€“Sat, 10 AM â€“ 8 PM
               </li>
             </ul>
           </div>
@@ -135,7 +122,7 @@ export default function Footer() {
               </Link>
             </div>
             <p className="text-xs text-gray-500 flex items-center gap-1">
-              © {currentYear} Janhavi Girish. Made with <Heart size={12} className="text-rose-accent" /> All rights reserved.
+              Â© {currentYear} Janhavi Girish. Made with <Heart size={12} className="text-rose-accent" /> All rights reserved.
             </p>
           </div>
         </div>
@@ -146,10 +133,11 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
           <p className="text-[11px] text-gray-600 text-center leading-relaxed">
             This website does not provide emergency mental health services. If you are in immediate danger or crisis, 
-            please contact emergency services or a crisis helpline. AASRA: 9820466726 | Vandrevala Foundation: 1860-2662-345
+            please contact emergency services or a crisis helpline. AASRA: 9820466626 | Vandrevala Foundation: 1860-2662-345
           </p>
         </div>
       </div>
     </footer>
   );
 }
+

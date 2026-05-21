@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
-import { User, Heart, Users } from 'lucide-react';
+import { User, Heart, Users, Trophy } from 'lucide-react';
 import { BookingData } from '@/app/book/page';
 
 interface Props {
@@ -17,7 +17,7 @@ export default function TherapyTypeStep({ bookingData, updateBookingData, onNext
       icon: User,
       title: 'Individual Therapy',
       description: 'One-on-one sessions tailored to your unique needs',
-      price: '₹1,500 onwards',
+      price: 'â‚¹1,500 onwards',
       duration: '60 minutes',
       color: 'border-sage-200 hover:border-sage-300 hover:bg-sage-50',
       selectedColor: 'border-sage-400 bg-sage-50 ring-2 ring-sage-200',
@@ -28,7 +28,7 @@ export default function TherapyTypeStep({ bookingData, updateBookingData, onNext
       icon: Heart,
       title: 'Couple Therapy',
       description: 'Strengthen your relationship through guided sessions',
-      price: '₹3,000 onwards',
+      price: 'â‚¹3,000 onwards',
       duration: '60 minutes',
       color: 'border-rose-light hover:border-rose-accent hover:bg-rose-light/20',
       selectedColor: 'border-rose-accent bg-rose-light/20 ring-2 ring-rose-light',
@@ -39,11 +39,22 @@ export default function TherapyTypeStep({ bookingData, updateBookingData, onNext
       icon: Users,
       title: 'Family Therapy',
       description: 'Heal family dynamics and build stronger connections',
-      price: '₹4,000 onwards',
+      price: 'â‚¹4,000 onwards',
       duration: '60 minutes',
       color: 'border-beige-300 hover:border-beige-400 hover:bg-beige-100',
       selectedColor: 'border-beige-400 bg-beige-100 ring-2 ring-beige-300',
       iconBg: 'bg-beige-200 text-charcoal-light',
+    },
+    {
+      id: 'sports',
+      icon: Trophy,
+      title: 'Sports Counselling',
+      description: 'Mental performance support for athletes â€” from lived experience',
+      price: 'â‚¹1,500 onwards',
+      duration: '60 minutes',
+      color: 'border-sage-200 hover:border-sage-400 hover:bg-sage-50',
+      selectedColor: 'border-sage-500 bg-sage-50 ring-2 ring-sage-300',
+      iconBg: 'bg-sage-200 text-sage-700',
     },
   ];
 
@@ -95,4 +106,11 @@ export default function TherapyTypeStep({ bookingData, updateBookingData, onNext
       </div>
     </div>
   );
+}
+
+
+interface Props {
+  bookingData: BookingData;
+  updateBookingData: (data: Partial<BookingData>) => void;
+  onNext: () => void;
 }

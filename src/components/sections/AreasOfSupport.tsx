@@ -76,30 +76,6 @@ export default function AreasOfSupport() {
         'Transition Stress (School to College, College to Work)',
       ],
     },
-    {
-      id: 'sports',
-      icon: Trophy,
-      title: 'Sports Counselling',
-      items: [
-        'Pre-Competition Anxiety Management',
-        'Focus & Concentration Training',
-        'Confidence & Self-Belief Building',
-        'Goal Setting & Motivation',
-        'Visualisation & Mental Imagery Techniques',
-        'Attention Control Training',
-        'Self-Talk Restructuring',
-        'Relaxation Techniques',
-        'Mindfulness for Athletes',
-        'Routine Building (Pre-Game Rituals)',
-        'Flow State Cultivation',
-        'Depression & Anxiety in Athletes',
-        'Burnout & Overtraining Syndrome',
-        'Disordered Eating in Sport',
-        'Substance Use Among Athletes',
-        'Sleep & Recovery Concerns',
-        'Stigma Around Seeking Mental Health Support',
-      ],
-    },
   ];
 
   const coupleTopics = [
@@ -134,8 +110,27 @@ export default function AreasOfSupport() {
     'Caregiver Burnout Support',
   ];
 
+  const sportsTopics = [
+    'Pre-Competition Anxiety Management',
+    'Focus & Concentration Training',
+    'Confidence & Self-Belief Building',
+    'Goal Setting & Motivation',
+    'Visualisation & Mental Imagery',
+    'Attention Control Training',
+    'Self-Talk Restructuring',
+    'Relaxation Techniques',
+    'Mindfulness for Athletes',
+    'Routine Building (Pre-Game Rituals)',
+    'Flow State Cultivation',
+    'Depression & Anxiety in Athletes',
+    'Burnout & Overtraining Syndrome',
+    'Disordered Eating in Sport',
+    'Sleep & Recovery Concerns',
+    'Stigma Around Mental Health Support',
+  ];
+
   return (
-    <section className="section-padding bg-white relative">
+    <section id="areas" className="section-padding bg-white relative">
       <div className="absolute inset-0 bg-grain opacity-20 pointer-events-none" />
       
       <div className="max-w-7xl mx-auto">
@@ -159,7 +154,7 @@ export default function AreasOfSupport() {
             <div className="w-8 h-8 rounded-lg bg-sage-100 flex items-center justify-center">
               <span className="text-sage-500 text-sm">ðŸ‘¤</span>
             </div>
-            Individual &amp; Sports Therapy
+            Individual Therapy
           </h3>
           
           <div className="space-y-3">
@@ -215,8 +210,8 @@ export default function AreasOfSupport() {
           </div>
         </div>
 
-        {/* Couple & Family Therapy */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Couple, Family & Sports Therapy */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Couple Therapy */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -265,6 +260,33 @@ export default function AreasOfSupport() {
               </p>
               <div className="flex flex-wrap gap-2">
                 {familyTopics.map((topic) => (
+                  <span key={topic} className="chip text-xs">
+                    {topic}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Sports Counselling */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="card bg-gradient-to-br from-sage-100/50 to-beige-100 border-sage-200"
+          >
+            <div className="space-y-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-sage-200 flex items-center justify-center">
+                  <Trophy size={20} className="text-sage-700" />
+                </div>
+                <h3 className="font-heading text-xl font-semibold text-charcoal">Sports Counselling</h3>
+              </div>
+              <p className="text-charcoal-light text-sm leading-relaxed">
+                Mental performance support for athletes at every level, combining professional training with 18 years of lived experience as a national competitive swimmer.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {sportsTopics.map((topic) => (
                   <span key={topic} className="chip text-xs">
                     {topic}
                   </span>

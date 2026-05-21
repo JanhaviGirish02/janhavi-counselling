@@ -1,16 +1,16 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Check, User, Heart, Users } from 'lucide-react';
+import { Check, User, Heart, Users, Trophy } from 'lucide-react';
 
 export default function Pricing() {
   const plans = [
     {
       icon: User,
       title: 'Individual Therapy',
-      price: '₹1,500',
+      price: 'â‚¹1,500',
       suffix: 'onwards',
       features: [
         '60 minutes per session',
@@ -29,7 +29,7 @@ export default function Pricing() {
     {
       icon: Heart,
       title: 'Couple Therapy',
-      price: '₹3,000',
+      price: 'â‚¹3,000',
       suffix: 'onwards',
       features: [
         '60 minutes per session',
@@ -48,7 +48,7 @@ export default function Pricing() {
     {
       icon: Users,
       title: 'Family Therapy',
-      price: '₹4,000',
+      price: 'â‚¹4,000',
       suffix: 'onwards',
       features: [
         '60 minutes per session',
@@ -63,6 +63,25 @@ export default function Pricing() {
       buttonClass: 'btn-secondary',
       popular: false,
       href: '/book?type=family',
+    },
+    {
+      icon: Trophy,
+      title: 'Sports Counselling',
+      price: 'â‚¹1,500',
+      suffix: 'onwards',
+      features: [
+        '60 minutes per session',
+        'Online mode (Video call)',
+        'Athletes of all levels',
+        'Performance & wellbeing focus',
+        'Athlete-informed approach',
+        'Mental skills training',
+      ],
+      color: 'border-sage-200 hover:border-sage-400',
+      iconBg: 'bg-sage-200 text-sage-700',
+      buttonClass: 'btn-primary',
+      popular: false,
+      href: '/book?type=sports',
     },
   ];
 
@@ -86,14 +105,14 @@ export default function Pricing() {
         </motion.div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.title}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.15 }}
+              transition={{ delay: index * 0.1 }}
               className="relative"
             >
               {plan.popular && (
@@ -163,3 +182,4 @@ export default function Pricing() {
     </section>
   );
 }
+
