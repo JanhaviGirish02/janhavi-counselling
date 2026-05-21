@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Brain, Briefcase, Target, GraduationCap, Heart, Users } from 'lucide-react';
+import { ChevronDown, Brain, Briefcase, Target, GraduationCap, Heart, Users, Trophy } from 'lucide-react';
 
 export default function AreasOfSupport() {
   const [openCategory, setOpenCategory] = useState<string | null>('mental-health');
@@ -13,16 +13,14 @@ export default function AreasOfSupport() {
       icon: Brain,
       title: 'Mental Health',
       items: [
-        'Depression & Low Mood',
+        'Depression',
         'Anxiety & Panic Attacks',
         'Shame & Guilt',
         'Trauma & Grief',
-        'OCD & Intrusive Thoughts',
-        'Emotional Dysregulation',
-        'Self-Harm & Suicidal Ideation',
-        'Phobias & Fears',
-        'Body Image Issues',
-        'Sleep Disorders',
+        'Sleep Difficulties',
+        'Adjustment Issues',
+        'Anger Management',
+        'Gender & Sexuality',
       ],
     },
     {
@@ -30,14 +28,16 @@ export default function AreasOfSupport() {
       icon: Briefcase,
       title: 'Work Pressure',
       items: [
-        'Difficult Manager Dynamics',
-        'Productivity & Burnout',
+        'Work Pressure',
+        'Difficult Manager',
+        'Productivity',
+        'Relationship with Colleagues',
+        'Management Skills',
+        'Difficult Conversations',
         'Workplace Communication',
-        'Career Transitions',
+        'Giving & Receiving Feedback',
+        'Career Progression',
         'Work-Life Balance',
-        'Performance Anxiety',
-        'Toxic Work Environment',
-        'Impostor Syndrome',
       ],
     },
     {
@@ -45,14 +45,16 @@ export default function AreasOfSupport() {
       icon: Target,
       title: 'Personal Growth',
       items: [
-        'Goal Setting & Clarity',
-        'Building Healthy Boundaries',
-        'Self-Esteem & Confidence',
-        'Identity & Purpose',
-        'Emotional Intelligence',
         'Communication Skills',
+        'Presentation Skills',
         'Decision Making',
-        'Life Transitions',
+        'Goal Setting',
+        'Habit Formation',
+        'Time Management',
+        'Self-Compassion',
+        'Setting Boundaries',
+        'Self-Care & Lifestyle',
+        'Self-Esteem',
       ],
     },
     {
@@ -62,28 +64,74 @@ export default function AreasOfSupport() {
       items: [
         'Exam Anxiety & Performance Pressure',
         'Procrastination & Motivation Issues',
-        'Fear of Failure & Perfectionism',
+        'Fear of Failure / Perfectionism',
         'Burnout & Academic Fatigue',
-        'Study Skills & Focus',
-        'Peer Pressure',
-        'Career Confusion',
-        'Parent-Student Conflict',
+        'Concentration & Attention Difficulties',
+        'Sleep Disruption due to Academic Stress',
+        'Parental Pressure & Expectations',
+        'Competitive Environment Stress',
+        'Career Confusion & Decision-Making Anxiety',
+        'Post-Result Emotional Crisis',
+        'Study Skills & Time Management Support',
+        'Transition Stress (School to College, College to Work)',
+      ],
+    },
+    {
+      id: 'sports',
+      icon: Trophy,
+      title: 'Sports Counselling',
+      items: [
+        'Pre-Competition Anxiety Management',
+        'Focus & Concentration Training',
+        'Confidence & Self-Belief Building',
+        'Goal Setting & Motivation',
+        'Visualisation & Mental Imagery Techniques',
+        'Attention Control Training',
+        'Self-Talk Restructuring',
+        'Relaxation Techniques',
+        'Mindfulness for Athletes',
+        'Routine Building (Pre-Game Rituals)',
+        'Flow State Cultivation',
+        'Depression & Anxiety in Athletes',
+        'Burnout & Overtraining Syndrome',
+        'Disordered Eating in Sport',
+        'Substance Use Among Athletes',
+        'Sleep & Recovery Concerns',
+        'Stigma Around Seeking Mental Health Support',
       ],
     },
   ];
 
   const coupleTopics = [
-    'Trust Issues', 'Premarital Counselling', 'Breakups & Heartbreak',
-    'Long Distance Stress', 'Communication Breakdown', 'Infidelity Recovery',
-    'Intimacy Issues', 'Conflict Resolution', 'Compatibility Concerns',
-    'Emotional Disconnect', 'Cultural Differences', 'Commitment Anxiety',
+    'Trust Issues',
+    'Interpersonal Abuse',
+    'Difficult In-Laws',
+    'Marital Conflicts',
+    'Pre-Marital Counselling',
+    'Dating',
+    'Breakups & Divorce',
+    'Intimacy & Emotional Disconnection',
+    'Codependency in Relationships',
+    'Inter-Caste / Inter-Religion Relationship Conflicts',
+    'Long-Distance Relationship Stress',
+    'Sexual & Physical Intimacy Concerns',
+    'Remarriage Adjustment',
   ];
 
   const familyTopics = [
-    'Parent-Child Conflict', 'Sibling Rivalry', 'Blended Family Dynamics',
-    'Grief & Loss', 'Generational Trauma', 'Boundary Setting',
-    'Communication Gaps', 'Divorce & Separation Impact', 'Caregiver Burnout',
-    'Parenting Challenges', 'Family Role Conflicts',
+    'Parent-Child Counselling',
+    'Sibling Counselling',
+    'Divorce & Co-Parenting Counselling',
+    'Grief & Loss within the Family',
+    'Family Counselling for Mental Health Conditions',
+    'Trauma-Informed Family Counselling',
+    'Addiction & Substance Use (Family Impact)',
+    'Multicultural / Cross-Cultural Family Counselling',
+    'Special Needs Family Counselling',
+    'Blended / Step-Family Counselling',
+    'Elder Care & Aging Family Counselling',
+    'Intergenerational Trauma & Conflict',
+    'Caregiver Burnout Support',
   ];
 
   return (
@@ -109,9 +157,9 @@ export default function AreasOfSupport() {
         <div className="mb-16">
           <h3 className="font-heading text-2xl font-semibold text-charcoal mb-8 flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-sage-100 flex items-center justify-center">
-              <span className="text-sage-500 text-sm">👤</span>
+              <span className="text-sage-500 text-sm">ðŸ‘¤</span>
             </div>
-            Individual Therapy
+            Individual &amp; Sports Therapy
           </h3>
           
           <div className="space-y-3">
@@ -184,7 +232,7 @@ export default function AreasOfSupport() {
                 <h3 className="font-heading text-xl font-semibold text-charcoal">Couple Therapy</h3>
               </div>
               <p className="text-charcoal-light text-sm leading-relaxed">
-                Nurture your relationship in a supportive environment. 
+                Nurture your relationship in a supportive environment.
                 Both partners work together towards understanding and connection.
               </p>
               <div className="flex flex-wrap gap-2">
@@ -212,7 +260,7 @@ export default function AreasOfSupport() {
                 <h3 className="font-heading text-xl font-semibold text-charcoal">Family Therapy</h3>
               </div>
               <p className="text-charcoal-light text-sm leading-relaxed">
-                Heal family dynamics and build stronger connections. 
+                Heal family dynamics and build stronger connections.
                 Work through challenges together in a safe, neutral space.
               </p>
               <div className="flex flex-wrap gap-2">

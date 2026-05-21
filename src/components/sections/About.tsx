@@ -1,20 +1,22 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Globe, Shield, Video } from 'lucide-react';
+import { Clock, Globe, Shield, Video, ChevronDown } from 'lucide-react';
 
 export default function About() {
+  const [showSports, setShowSports] = useState(false);
+
   const badges = [
-    { icon: Clock, label: '600+ Clinical Hours', color: 'bg-sage-100 text-sage-600' },
-    { icon: Globe, label: 'Multilingual', color: 'bg-beige-200 text-charcoal-light' },
+    { icon: Clock, label: '600+ Clinical Hours', color: 'bg-sage-100 text-sage-700' },
+    { icon: Globe, label: '4 Languages', color: 'bg-beige-100 text-charcoal-light' },
     { icon: Shield, label: 'Evidence-Based Therapy', color: 'bg-rose-light text-rose-dark' },
-    { icon: Video, label: 'Online Sessions', color: 'bg-sage-100 text-sage-600' },
+    { icon: Video, label: 'Online Sessions', color: 'bg-sage-100 text-sage-700' },
   ];
 
   const highlights = [
     'Anxiety', 'Depression', 'Stress', 'Anger Issues',
-    'Relationships', 'Academic Stress', 'Self-Esteem',
+    'Relationships', 'Academic Stress', 'Self-Esteem', 'Sports Performance',
   ];
 
   return (
@@ -87,6 +89,39 @@ export default function About() {
                 I work with individuals, couples, and families, creating a safe and confidential space 
                 where you can explore your thoughts and emotions without judgment.
               </p>
+            </div>
+
+            {/* Sports Psychology – expandable */}
+            <div className="rounded-2xl border border-sage-200 bg-sage-50 overflow-hidden">
+              <button
+                onClick={() => setShowSports(!showSports)}
+                className="w-full flex items-center justify-between p-4 hover:bg-sage-100 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">🏊</span>
+                  <span className="font-medium text-charcoal text-sm">Sports Psychology &amp; Athlete Wellbeing</span>
+                </div>
+                <ChevronDown
+                  size={18}
+                  className={`text-sage-500 transition-transform duration-300 ${showSports ? 'rotate-180' : ''}`}
+                />
+              </button>
+              {showSports && (
+                <div className="px-4 pb-4 space-y-3 text-charcoal-light text-sm leading-relaxed border-t border-sage-200 pt-4">
+                  <p>
+                    Alongside my clinical work, I specialise in Sports Psychology — and this is an area that
+                    is deeply personal to me. I have been a national level competitive swimmer for over 18 years.
+                    That lived experience as an athlete gives me a unique understanding of the mental demands of
+                    sport — the self-doubt before a big race, the toll of injuries, the pressure to perform, and
+                    the identity questions that come with it all.
+                  </p>
+                  <p>
+                    Working with athletes, I bring both professional training and genuine lived experience to the table.
+                    Whether you&apos;re struggling with performance anxiety, motivation, focus, burnout, or the emotional
+                    side of competition, I understand that world from the inside — not just from a textbook.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Highlighted Keywords */}

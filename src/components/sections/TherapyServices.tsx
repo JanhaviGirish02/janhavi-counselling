@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { User, Heart, Users, ArrowRight } from 'lucide-react';
+import { User, Heart, Users, Trophy, ArrowRight } from 'lucide-react';
 
 export default function TherapyServices() {
   const services = [
@@ -34,6 +34,15 @@ export default function TherapyServices() {
       iconBg: 'bg-beige-300 text-charcoal-light',
       href: '/book?type=family',
     },
+    {
+      icon: Trophy,
+      title: 'Sports Counselling',
+      description: 'Mental performance support for athletes at every level. Combining professional training with 18 years of lived experience as a national competitive swimmer.',
+      features: ['60 min sessions', 'Athletes of all levels', 'Performance + wellbeing'],
+      color: 'from-sage-200 to-sage-100',
+      iconBg: 'bg-sage-300 text-sage-700',
+      href: '/book?type=sports',
+    },
   ];
 
   return (
@@ -56,7 +65,7 @@ export default function TherapyServices() {
         </motion.div>
 
         {/* Service Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((service, index) => (
             <motion.div
               key={service.title}

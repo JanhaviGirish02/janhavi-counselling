@@ -84,7 +84,7 @@ export default function Hero() {
             <div className="flex flex-wrap gap-6 pt-4">
               {[
                 { value: '600+', label: 'Clinical Hours' },
-                { value: '5+', label: 'Languages' },
+                { value: '4', label: 'Languages' },
                 { value: '100%', label: 'Confidential' },
               ].map((stat) => (
                 <div key={stat.label} className="text-center">
