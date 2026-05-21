@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply font-body text-charcoal bg-beige-50;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-8 py-3.5 bg-sage-300 text-white font-medium rounded-2xl 
+    hover:bg-sage-500 transition-all duration-300 shadow-soft hover:shadow-hover
+    transform hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply px-8 py-3.5 border-2 border-sage-300 text-sage-500 font-medium rounded-2xl 
+    hover:bg-sage-300 hover:text-white transition-all duration-300
+    transform hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .btn-rose {
+    @apply px-8 py-3.5 bg-rose-accent text-white font-medium rounded-2xl 
+    hover:bg-rose-dark transition-all duration-300 shadow-soft hover:shadow-hover
+    transform hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .card {
+    @apply bg-white rounded-3xl p-6 md:p-8 shadow-card hover:shadow-hover 
+    transition-all duration-300 border border-beige-200;
+  }
+
+  .section-padding {
+    @apply py-16 md:py-24 px-4 md:px-8 lg:px-16;
+  }
+
+  .section-title {
+    @apply font-heading text-3xl md:text-4xl lg:text-5xl text-charcoal font-semibold;
+  }
+
+  .section-subtitle {
+    @apply text-charcoal-lighter text-lg md:text-xl mt-4 max-w-2xl;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 border border-beige-300 rounded-xl bg-white
+    focus:outline-none focus:ring-2 focus:ring-sage-300 focus:border-transparent
+    transition-all duration-200 text-charcoal placeholder:text-charcoal-lighter;
+  }
+
+  .chip {
+    @apply inline-block px-4 py-2 bg-beige-100 text-charcoal-light rounded-full 
+    text-sm font-medium border border-beige-200 hover:bg-sage-100 
+    hover:border-sage-200 transition-all duration-200 cursor-default;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-sage-400 to-sage-600;
+  }
+  
+  .bg-grain {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F6F1EB;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #8FAF9D;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5f8672;
+}
+
+/* Smooth transition for page navigation */
+.page-transition {
+  animation: fadeIn 0.5s ease-out;
+}
