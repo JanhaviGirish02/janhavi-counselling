@@ -143,9 +143,13 @@ export default function AdminDashboard() {
         const res = await fetch('/api/status');
         if (res.ok) setIntegrationStatus(await res.json());
       } catch { /* not critical */ }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Admin init error:', err);
-      toast.error('Failed to load dashboard data. Check console for details.');
+      if (err?.code === 'permission-denied') {
+        toast.error('Firestore permission denied. Update security rules in Firebase Console to allow authenticated reads.', { duration: 8000 });
+      } else {
+        toast.error('Failed to load dashboard data. Check console for details.');
+      }
     } finally {
       setIsLoading(false);
     }
