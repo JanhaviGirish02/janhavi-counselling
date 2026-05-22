@@ -1,19 +1,16 @@
-﻿'use client';
+'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
 import {
   Calendar, Users, Clock,
   CheckCircle, XCircle, BarChart3,
-  MessageCircle, Settings, Bell, Video,
-  Save, Plus, Trash2, Link as LinkIcon,
+  MessageCircle, Settings,
+  Video, Save, Plus, Trash2,
+  Link as LinkIcon, FileText, StickyNote,
 } from 'lucide-react';
 import Link from 'next/link';
-import {
-  collection, query, getDocs, doc, getDoc,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import toast from 'react-hot-toast';
 
 interface Booking {
@@ -21,6 +18,8 @@ interface Booking {
   fullName: string;
   email: string;
   phone: string;
+  age: string;
+  pronouns: string;
   therapyType: string;
   date: string;
   time: string;
@@ -28,8 +27,18 @@ interface Booking {
   paymentId: string;
   mainConcern: string;
   preferredLanguage: string;
+  emergencyContact: string;
+  previousTherapy: string;
+  additionalNotes: string;
   createdAt: string;
   meetLink?: string;
+}
+
+interface ClientNote {
+  id: string;
+  email: string;
+  note: string;
+  createdAt: string;
 }
 
 interface AvailabilitySettings {
@@ -63,9 +72,13 @@ const typeLabels: Record<string, string> = {
 export default function AdminDashboard() {
   const { user, isAdmin, loading } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [clientNotes, setClientNotes] = useState<ClientNote[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [selectedClientEmail, setSelectedClientEmail] = useState<string | null>(null);
+  const [newNoteText, setNewNoteText] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
 
   const [meetLinkInputs, setMeetLinkInputs] = useState<Record<string, string>>({});
   const [savingMeetLink, setSavingMeetLink] = useState<string | null>(null);
@@ -90,43 +103,58 @@ export default function AdminDashboard() {
     firebase: boolean; razorpay: boolean; email: boolean; adminEmail: string | null;
   } | null>(null);
 
-  useEffect(() => {
-    async function init() {
+  const loadData = useCallback(async () => {
+    try {
+      const { db } = await import('@/lib/firebase');
+      const { collection, query, getDocs, doc, getDoc } = await import('firebase/firestore');
+
+      // Fetch bookings
+      const snap = await getDocs(query(collection(db, 'bookings')));
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Booking[];
+      data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setBookings(data);
+
+      const meets: Record<string, string> = {};
+      data.forEach((b) => { meets[b.id] = b.meetLink || ''; });
+      setMeetLinkInputs(meets);
+
+      // Fetch client notes
       try {
-        // Fetch all bookings — sort client-side to avoid composite index requirement
-        const snap = await getDocs(query(collection(db, 'bookings')));
-        const data = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Booking[];
-        data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        setBookings(data);
-        const meets: Record<string, string> = {};
-        data.forEach((b) => { meets[b.id] = b.meetLink || ''; });
-        setMeetLinkInputs(meets);
+        const notesSnap = await getDocs(query(collection(db, 'clientNotes')));
+        const notes = notesSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as ClientNote[];
+        notes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setClientNotes(notes);
+      } catch { /* collection may not exist yet */ }
 
-        try {
-          const availDoc = await getDoc(doc(db, 'settings', 'availability'));
-          if (availDoc.exists()) setAvailability(availDoc.data() as AvailabilitySettings);
-        } catch { /* settings may not exist yet */ }
+      // Fetch availability settings
+      try {
+        const availDoc = await getDoc(doc(db, 'settings', 'availability'));
+        if (availDoc.exists()) setAvailability(availDoc.data() as AvailabilitySettings);
+      } catch { /* settings may not exist yet */ }
 
-        try {
-          const genDoc = await getDoc(doc(db, 'settings', 'general'));
-          if (genDoc.exists()) setGeneralSettings(genDoc.data() as GeneralSettings);
-        } catch { /* settings may not exist yet */ }
+      // Fetch general settings
+      try {
+        const genDoc = await getDoc(doc(db, 'settings', 'general'));
+        if (genDoc.exists()) setGeneralSettings(genDoc.data() as GeneralSettings);
+      } catch { /* settings may not exist yet */ }
 
-        // Fetch integration status from server (can read server-only env vars)
-        try {
-          const res = await fetch('/api/status');
-          if (res.ok) setIntegrationStatus(await res.json());
-        } catch { /* not critical */ }
-      } catch (err) {
-        console.error('Admin init error:', err);
-        toast.error('Failed to load dashboard data. Check console for details.');
-      } finally {
-        setIsLoading(false);
-      }
+      // Fetch integration status
+      try {
+        const res = await fetch('/api/status');
+        if (res.ok) setIntegrationStatus(await res.json());
+      } catch { /* not critical */ }
+    } catch (err) {
+      console.error('Admin init error:', err);
+      toast.error('Failed to load dashboard data. Check console for details.');
+    } finally {
+      setIsLoading(false);
     }
-    if (!loading && isAdmin) { init(); }
+  }, []);
+
+  useEffect(() => {
+    if (!loading && isAdmin) { loadData(); }
     else if (!loading && !isAdmin) { setIsLoading(false); }
-  }, [loading, isAdmin]);
+  }, [loading, isAdmin, loadData]);
 
   const updateBookingStatus = async (bookingId: string, status: string) => {
     try {
@@ -195,6 +223,41 @@ export default function AdminDashboard() {
     }
   };
 
+  const saveClientNote = async () => {
+    if (!selectedClientEmail || !newNoteText.trim()) return;
+    setSavingNote(true);
+    try {
+      const { db: firestore } = await import('@/lib/firebase');
+      const { collection: fsCol, addDoc: fsAdd } = await import('firebase/firestore');
+      const noteData = {
+        email: selectedClientEmail,
+        note: newNoteText.trim(),
+        createdAt: new Date().toISOString(),
+      };
+      const ref = await fsAdd(fsCol(firestore, 'clientNotes'), noteData);
+      setClientNotes((prev) => [{ id: ref.id, ...noteData }, ...prev]);
+      setNewNoteText('');
+      toast.success('Note saved');
+    } catch (e) {
+      console.error('Note save error:', e);
+      toast.error('Failed to save note');
+    } finally {
+      setSavingNote(false);
+    }
+  };
+
+  const deleteClientNote = async (noteId: string) => {
+    try {
+      const { db: firestore } = await import('@/lib/firebase');
+      const { doc: fsDoc, deleteDoc: fsDel } = await import('firebase/firestore');
+      await fsDel(fsDoc(firestore, 'clientNotes', noteId));
+      setClientNotes((prev) => prev.filter((n) => n.id !== noteId));
+      toast.success('Note deleted');
+    } catch {
+      toast.error('Failed to delete note');
+    }
+  };
+
   const toggleDay = (day: number) => {
     setAvailability((prev) => ({
       ...prev,
@@ -254,11 +317,13 @@ export default function AdminDashboard() {
     cancelled: bookings.filter((b) => b.status === 'cancelled').length,
   };
 
+  const uniqueClients = Array.from(new Map(bookings.map((b) => [b.email, b])).values());
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'bookings', label: 'Bookings', icon: Calendar },
-    { id: 'availability', label: 'Availability', icon: Clock },
     { id: 'clients', label: 'Clients', icon: Users },
+    { id: 'availability', label: 'Availability', icon: Clock },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -270,9 +335,11 @@ export default function AdminDashboard() {
             <h1 className="font-heading text-3xl font-bold text-charcoal">Admin Dashboard</h1>
             <p className="text-charcoal-lighter mt-1">Manage your practice</p>
           </div>
-          <button className="p-2.5 rounded-xl bg-white border border-beige-200 hover:bg-beige-50 transition-colors">
-            <Bell size={18} className="text-charcoal-lighter" />
-          </button>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-charcoal-lighter bg-white border border-beige-200 px-3 py-1.5 rounded-lg">
+              {stats.confirmed} upcoming
+            </span>
+          </div>
         </motion.div>
 
         <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
@@ -382,6 +449,7 @@ export default function AdminDashboard() {
                             <span>{booking.date} &middot; {booking.time}</span>
                             <span>&bull;</span>
                             <span>{booking.email}</span>
+                            {booking.phone && <><span>&bull;</span><span>{booking.phone}</span></>}
                           </div>
                           {booking.mainConcern && <p className="text-xs text-charcoal-lighter line-clamp-1">Concern: {booking.mainConcern}</p>}
                         </div>
@@ -420,6 +488,58 @@ export default function AdminDashboard() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Clients Tab */}
+        {activeTab === 'clients' && (
+          <div className="space-y-6">
+            <div className="card">
+              <h2 className="font-heading text-lg font-semibold mb-6">Client Directory ({uniqueClients.length})</h2>
+              {uniqueClients.length === 0 ? (
+                <p className="text-charcoal-lighter text-center py-8">No clients yet.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-charcoal-lighter border-b border-beige-100">
+                        <th className="pb-3 font-medium">Name</th>
+                        <th className="pb-3 font-medium">Email</th>
+                        <th className="pb-3 font-medium">Phone</th>
+                        <th className="pb-3 font-medium">Sessions</th>
+                        <th className="pb-3 font-medium">Notes</th>
+                        <th className="pb-3 font-medium">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-beige-100">
+                      {uniqueClients.map((b) => {
+                        const sessionCount = bookings.filter((bk) => bk.email === b.email).length;
+                        const noteCount = clientNotes.filter((n) => n.email === b.email).length;
+                        return (
+                          <tr key={b.email} className="hover:bg-beige-50">
+                            <td className="py-3 font-medium text-charcoal">{b.fullName}</td>
+                            <td className="py-3 text-charcoal-lighter">{b.email}</td>
+                            <td className="py-3 text-charcoal-lighter">{b.phone}</td>
+                            <td className="py-3">{sessionCount}</td>
+                            <td className="py-3">
+                              {noteCount > 0 && <span className="text-xs bg-sage-100 text-sage-600 px-2 py-0.5 rounded-full">{noteCount}</span>}
+                            </td>
+                            <td className="py-3">
+                              <button
+                                onClick={() => setSelectedClientEmail(b.email)}
+                                className="text-xs px-3 py-1.5 bg-sage-100 text-sage-700 rounded-lg hover:bg-sage-200 transition-colors flex items-center gap-1"
+                              >
+                                <StickyNote size={12} /> Notes
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -487,39 +607,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Clients Tab */}
-        {activeTab === 'clients' && (
-          <div className="card">
-            <h2 className="font-heading text-lg font-semibold mb-6">Client Directory</h2>
-            {bookings.length === 0 ? (
-              <p className="text-charcoal-lighter text-center py-8">No clients yet.</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-charcoal-lighter border-b border-beige-100">
-                      <th className="pb-3 font-medium">Name</th>
-                      <th className="pb-3 font-medium">Email</th>
-                      <th className="pb-3 font-medium">Phone</th>
-                      <th className="pb-3 font-medium">Sessions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-beige-100">
-                    {Array.from(new Map(bookings.map((b) => [b.email, b])).values()).map((b) => (
-                      <tr key={b.email} className="hover:bg-beige-50">
-                        <td className="py-3 font-medium text-charcoal">{b.fullName}</td>
-                        <td className="py-3 text-charcoal-lighter">{b.email}</td>
-                        <td className="py-3 text-charcoal-lighter">{b.phone}</td>
-                        <td className="py-3">{bookings.filter((bk) => bk.email === b.email).length}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Settings Tab */}
         {activeTab === 'settings' && (
           <div className="space-y-6">
@@ -568,7 +655,7 @@ export default function AdminDashboard() {
                     name: 'Email (Gmail SMTP)',
                     ok: integrationStatus?.email ?? false,
                     note: integrationStatus?.email
-                      ? `Sending from ${integrationStatus.adminEmail || process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'configured'}`
+                      ? `Sending from ${integrationStatus.adminEmail || 'configured'}`
                       : 'Set GMAIL_USER and a valid 16-char GMAIL_APP_PASSWORD in .env.local',
                   },
                   {
@@ -592,6 +679,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* Booking Details Modal */}
         {selectedBooking && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="card max-w-lg w-full max-h-[85vh] overflow-y-auto">
@@ -603,11 +691,15 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: 'Name', value: selectedBooking.fullName },
+                    { label: 'Age', value: selectedBooking.age || 'N/A' },
+                    { label: 'Pronouns', value: selectedBooking.pronouns || 'N/A' },
                     { label: 'Phone', value: selectedBooking.phone },
                     { label: 'Email', value: selectedBooking.email },
                     { label: 'Type', value: typeLabels[selectedBooking.therapyType] || selectedBooking.therapyType },
                     { label: 'Date', value: selectedBooking.date },
                     { label: 'Time', value: selectedBooking.time },
+                    { label: 'Language', value: selectedBooking.preferredLanguage || 'N/A' },
+                    { label: 'Status', value: selectedBooking.status },
                   ].map(({ label, value }) => (
                     <div key={label} className="p-3 bg-beige-50 rounded-lg">
                       <p className="text-xs text-charcoal-lighter">{label}</p>
@@ -621,6 +713,24 @@ export default function AdminDashboard() {
                     <p className="font-medium mt-1">{selectedBooking.mainConcern}</p>
                   </div>
                 )}
+                {selectedBooking.emergencyContact && (
+                  <div className="p-3 bg-beige-50 rounded-lg">
+                    <p className="text-xs text-charcoal-lighter">Emergency Contact</p>
+                    <p className="font-medium mt-1">{selectedBooking.emergencyContact}</p>
+                  </div>
+                )}
+                {selectedBooking.previousTherapy && (
+                  <div className="p-3 bg-beige-50 rounded-lg">
+                    <p className="text-xs text-charcoal-lighter">Previous Therapy Experience</p>
+                    <p className="font-medium mt-1">{selectedBooking.previousTherapy}</p>
+                  </div>
+                )}
+                {selectedBooking.additionalNotes && (
+                  <div className="p-3 bg-beige-50 rounded-lg">
+                    <p className="text-xs text-charcoal-lighter">Additional Notes from Client</p>
+                    <p className="font-medium mt-1">{selectedBooking.additionalNotes}</p>
+                  </div>
+                )}
                 {selectedBooking.meetLink && (
                   <div className="p-3 bg-sage-50 rounded-lg">
                     <p className="text-xs text-charcoal-lighter">Meet Link</p>
@@ -630,6 +740,92 @@ export default function AdminDashboard() {
                 <div className="p-3 bg-beige-50 rounded-lg">
                   <p className="text-xs text-charcoal-lighter">Payment ID</p>
                   <p className="font-medium font-mono text-xs">{selectedBooking.paymentId || 'N/A'}</p>
+                </div>
+                <div className="p-3 bg-beige-50 rounded-lg">
+                  <p className="text-xs text-charcoal-lighter">Booked On</p>
+                  <p className="font-medium text-xs">{selectedBooking.createdAt ? new Date(selectedBooking.createdAt).toLocaleString() : 'N/A'}</p>
+                </div>
+
+                {/* Quick Actions */}
+                {selectedBooking.status === 'confirmed' && (
+                  <div className="flex gap-2 pt-2">
+                    <button onClick={() => { updateBookingStatus(selectedBooking.id, 'completed'); setSelectedBooking(null); }} className="flex-1 text-sm px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors">Mark Complete</button>
+                    <button onClick={() => { updateBookingStatus(selectedBooking.id, 'cancelled'); setSelectedBooking(null); }} className="flex-1 text-sm px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors">Cancel Session</button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Client Notes Modal */}
+        {selectedClientEmail && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="card max-w-lg w-full max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="font-heading text-lg font-semibold flex items-center gap-2">
+                    <FileText size={18} /> Client Notes
+                  </h3>
+                  <p className="text-xs text-charcoal-lighter mt-1">{selectedClientEmail}</p>
+                </div>
+                <button onClick={() => setSelectedClientEmail(null)} className="p-2 hover:bg-beige-100 rounded-lg transition-colors"><XCircle size={18} /></button>
+              </div>
+
+              {/* Add New Note */}
+              <div className="mb-4 space-y-2">
+                <textarea
+                  rows={3}
+                  placeholder="Add a private note about this client..."
+                  value={newNoteText}
+                  onChange={(e) => setNewNoteText(e.target.value)}
+                  className="w-full border border-beige-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-sage-300 resize-none"
+                />
+                <button
+                  onClick={saveClientNote}
+                  disabled={savingNote || !newNoteText.trim()}
+                  className="flex items-center gap-2 px-4 py-2 bg-sage-300 text-white rounded-lg text-sm hover:bg-sage-400 transition-colors disabled:opacity-50"
+                >
+                  <Plus size={14} /> {savingNote ? 'Saving...' : 'Add Note'}
+                </button>
+              </div>
+
+              {/* Existing Notes */}
+              <div className="space-y-3">
+                {clientNotes.filter((n) => n.email === selectedClientEmail).length === 0 ? (
+                  <p className="text-charcoal-lighter text-sm text-center py-4">No notes for this client yet.</p>
+                ) : (
+                  clientNotes.filter((n) => n.email === selectedClientEmail).map((note) => (
+                    <div key={note.id} className="p-3 bg-beige-50 rounded-lg group">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm text-charcoal whitespace-pre-wrap">{note.note}</p>
+                        <button
+                          onClick={() => deleteClientNote(note.id)}
+                          className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-all flex-shrink-0"
+                          title="Delete note"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-charcoal-lighter mt-2">{new Date(note.createdAt).toLocaleString()}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Client Session History */}
+              <div className="mt-6 pt-4 border-t border-beige-200">
+                <h4 className="text-sm font-medium text-charcoal mb-3">Session History</h4>
+                <div className="space-y-2">
+                  {bookings.filter((b) => b.email === selectedClientEmail).map((b) => (
+                    <div key={b.id} className="flex items-center justify-between text-xs p-2 bg-white rounded-lg border border-beige-100">
+                      <span className="text-charcoal">{b.date} &middot; {b.time}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-charcoal-lighter">{typeLabels[b.therapyType] || b.therapyType}</span>
+                        <span className={`px-2 py-0.5 rounded-full font-medium ${b.status === 'confirmed' ? 'bg-green-100 text-green-700' : b.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>{b.status}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </motion.div>

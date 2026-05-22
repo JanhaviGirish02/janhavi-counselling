@@ -145,21 +145,6 @@ export default function ConfirmationStep({ bookingData }: Props) {
         </ul>
       </motion.div>
 
-      {/* Important Notes */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.9 }}
-        className="p-4 bg-beige-100 rounded-2xl border border-beige-200 text-left"
-      >
-        <p className="text-xs text-charcoal-light leading-relaxed">
-          <strong>Cancellation Policy:</strong> Free cancellation up to 24 hours before the session. 
-          Cancellations within 24 hours may be charged. See our{' '}
-          <Link href="/cancellation-policy" className="text-sage-500 underline">cancellation policy</Link>{' '}
-          for details.
-        </p>
-      </motion.div>
-
       {/* Actions */}
       <motion.div
         initial={{ opacity: 0 }}

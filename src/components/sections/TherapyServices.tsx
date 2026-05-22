@@ -72,7 +72,7 @@ export default function TherapyServices() {
               className="group"
             >
               <div className={`card h-full bg-gradient-to-br ${service.color} border-0 group-hover:shadow-hover transition-all duration-300 group-hover:-translate-y-1`}>
-                <div className="space-y-6">
+                <div className="flex flex-col h-full gap-6">
                   {/* Icon */}
                   <div className={`w-14 h-14 rounded-2xl ${service.iconBg} flex items-center justify-center`}>
                     <service.icon size={24} />
@@ -91,7 +91,7 @@ export default function TherapyServices() {
                   {/* CTA */}
                   <Link
                     href={service.href}
-                    className="inline-flex items-center gap-2 text-sage-500 font-medium text-sm group-hover:gap-3 transition-all"
+                    className="inline-flex items-center gap-2 text-sage-500 font-medium text-sm group-hover:gap-3 transition-all mt-auto"
                   >
                     Book Now
                     <ArrowRight size={16} />

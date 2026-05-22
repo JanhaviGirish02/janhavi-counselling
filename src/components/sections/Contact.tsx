@@ -91,7 +91,7 @@ export default function Contact() {
             {/* Confidentiality Note */}
             <div className="p-4 bg-sage-50 rounded-2xl border border-sage-100">
               <p className="text-xs text-sage-600 leading-relaxed">
-                ðŸ”’ <strong>Confidentiality Promise:</strong> All communications are strictly confidential. 
+                &#x1F512; <strong>Confidentiality Promise:</strong> All communications are strictly confidential. 
                 Your privacy and emotional safety are my priority.
               </p>
             </div>

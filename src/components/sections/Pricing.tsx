@@ -73,9 +73,9 @@ export default function Pricing() {
         '60 minutes per session',
         'Online mode (Video call)',
         'Athletes of all levels',
-        'Performance & wellbeing focus',
-        'Athlete-informed approach',
-        'Mental skills training',
+        'Confidential & safe space',
+        'Personalized treatment plan',
+        'Between-session support resources',
       ],
       color: 'border-sage-200 hover:border-sage-400',
       iconBg: 'bg-sage-200 text-sage-700',
@@ -171,12 +171,8 @@ export default function Pricing() {
           viewport={{ once: true }}
           className="text-center text-sm text-charcoal-lighter mt-10 max-w-xl mx-auto"
         >
-          All sessions are conducted online via secure video call. 
-          Payment is required at the time of booking. See our{' '}
-          <Link href="/cancellation-policy" className="text-sage-500 underline">
-            cancellation policy
-          </Link>{' '}
-          for details.
+          All sessions are conducted online via secure video call.
+          Payment is required at the time of booking.
         </motion.p>
       </div>
     </section>

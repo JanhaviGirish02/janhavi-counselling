@@ -175,11 +175,6 @@ export default function MyBookingsPage() {
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    {booking.status === 'confirmed' && (
-                      <button className="text-xs px-4 py-2 border border-beige-300 rounded-lg hover:bg-beige-50 transition-colors">
-                        Reschedule
-                      </button>
-                    )}
                   </div>
                 </div>
               </motion.div>

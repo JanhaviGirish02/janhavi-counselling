@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -12,6 +12,7 @@ export default function Footer() {
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -21,7 +22,7 @@ export default function Footer() {
               <span className="font-heading text-xl font-semibold">Janhavi</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
-              Creating a warm, safe, and judgment-free space for emotional healing, 
+              Creating a warm, safe, and judgment-free space for emotional healing,
               self-growth, and meaningful change.
             </p>
             <div className="flex gap-3">
@@ -95,8 +96,8 @@ export default function Footer() {
                 janhavigirish@gmail.com
               </li>
               <li className="flex items-start gap-3 text-gray-400 text-sm">
-                <span className="text-sage-300 text-xs mt-0.5">â—</span>
-                Sessions: Mon–Sat, 10 AM – 8 PM
+                <span className="text-sage-300 text-xs mt-0.5">&#x25CF;</span>
+                Sessions: Mon&#x2013;Sat, 10 AM &#x2013; 8 PM
               </li>
             </ul>
           </div>
@@ -112,17 +113,14 @@ export default function Footer() {
                 Privacy Policy
               </Link>
               <Link href="/terms" className="hover:text-sage-300 transition-colors">
-                Terms & Conditions
-              </Link>
-              <Link href="/cancellation-policy" className="hover:text-sage-300 transition-colors">
-                Cancellation Policy
+                Terms &amp; Conditions
               </Link>
               <Link href="/disclaimer" className="hover:text-sage-300 transition-colors">
                 Disclaimer
               </Link>
             </div>
             <p className="text-xs text-gray-500 flex items-center gap-1">
-              © {currentYear} Janhavi Girish. Made with <Heart size={12} className="text-rose-accent" /> All rights reserved.
+              &#x00A9; {currentYear} Janhavi Girish. Made with <Heart size={12} className="text-rose-accent" /> All rights reserved.
             </p>
           </div>
         </div>
@@ -132,7 +130,7 @@ export default function Footer() {
       <div className="bg-charcoal border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
           <p className="text-[11px] text-gray-600 text-center leading-relaxed">
-            This website does not provide emergency mental health services. If you are in immediate danger or crisis, 
+            This website does not provide emergency mental health services. If you are in immediate danger or crisis,
             please contact emergency services or a crisis helpline. AASRA: 9820466626 | Vandrevala Foundation: 1860-2662-345
           </p>
         </div>
@@ -140,4 +138,3 @@ export default function Footer() {
     </footer>
   );
 }
-

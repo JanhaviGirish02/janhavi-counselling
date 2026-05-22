@@ -127,6 +127,27 @@ export default function LoginPage() {
           </button>
         </form>
 
+        {/* Forgot Password */}
+        <p className="text-center text-sm text-charcoal-lighter">
+          <button
+            type="button"
+            onClick={async () => {
+              if (!email) { toast.error('Enter your email first'); return; }
+              try {
+                const { auth } = await import('@/lib/firebase');
+                const { sendPasswordResetEmail } = await import('firebase/auth');
+                await sendPasswordResetEmail(auth, email);
+                toast.success('Password reset email sent!');
+              } catch {
+                toast.error('Could not send reset email. Check your email address.');
+              }
+            }}
+            className="text-sage-500 font-medium hover:underline"
+          >
+            Forgot Password?
+          </button>
+        </p>
+
         {/* Footer */}
         <p className="text-center text-sm text-charcoal-lighter">
           Don&apos;t have an account?{' '}

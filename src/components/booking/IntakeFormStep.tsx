@@ -123,9 +123,7 @@ export default function IntakeFormStep({ bookingData, updateBookingData, onNext,
             <option value="English">English</option>
             <option value="Hindi">Hindi</option>
             <option value="Kannada">Kannada</option>
-            <option value="Marathi">Marathi</option>
             <option value="Tamil">Tamil</option>
-            <option value="Telugu">Telugu</option>
           </select>
         </div>
 

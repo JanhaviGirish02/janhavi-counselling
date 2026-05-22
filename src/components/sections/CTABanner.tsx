@@ -43,12 +43,10 @@ export default function CTABanner() {
                 <ArrowRight size={18} />
               </Link>
               <a
-                href="https://wa.me/91XXXXXXXXXX"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="mailto:janhavigirish@gmail.com"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-white/60 text-white font-semibold rounded-2xl hover:bg-white/10 transition-all duration-300"
               >
-                Chat on WhatsApp
+                Contact over Email
               </a>
             </div>
           </div>
