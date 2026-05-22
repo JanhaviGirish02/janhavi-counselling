@@ -38,6 +38,7 @@ export default function PaymentStep({ bookingData, updateBookingData, onNext, on
 
     try {
       // Create order via API
+      console.log('[Payment] Calling /api/create-order with amount:', amount);
       const response = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -50,12 +51,18 @@ export default function PaymentStep({ bookingData, updateBookingData, onNext, on
       });
 
       const order = await response.json();
+      console.log('[Payment] create-order response:', JSON.stringify(order));
+      console.log('[Payment] order.id:', order.id, '| order.status:', order.status);
+      console.log('[Payment] NEXT_PUBLIC_RAZORPAY_KEY_ID from client env:', process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID);
 
       if (!order.id) {
         // If Razorpay is not configured, simulate payment for demo
+        console.warn('[Payment] No order.id — falling back to demo. Reason:', order.message || order.error || 'unknown');
         await simulatePayment();
         return;
       }
+
+      console.log('[Payment] Razorpay order created, opening checkout...');
 
       // Initialize Razorpay
       const options = {

@@ -9,8 +9,14 @@ export async function POST(request: NextRequest) {
     const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-    if (!keyId || !keySecret || keyId === 'your_razorpay_key_id') {
+    console.log('Create-order API: Checking Razorpay config...');
+    console.log('NEXT_PUBLIC_RAZORPAY_KEY_ID:', keyId ? `${keyId.substring(0, 15)}...` : 'NOT SET');
+    console.log('RAZORPAY_KEY_SECRET:', keySecret ? '***HIDDEN***' : 'NOT SET');
+
+    if (!keyId || !keySecret || keyId.includes('your_razorpay')) {
       // Return demo order for development
+      console.log('Razorpay not configured. Running in demo mode.');
+      console.log('keyId falsy:', !keyId, '| keySecret falsy:', !keySecret);
       return NextResponse.json({
         id: null,
         amount: amount * 100,
@@ -20,6 +26,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    console.log('Razorpay configured. Creating order...');
     // Create Razorpay order
     const Razorpay = require('razorpay');
     const razorpay = new Razorpay({
@@ -39,6 +46,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log('Razorpay order created successfully:', order.id);
     return NextResponse.json(order);
   } catch (error: any) {
     console.error('Error creating order:', error);
