@@ -44,16 +44,13 @@ export default function About() {
             className="flex justify-center"
           >
             <div className="relative">
-              <div className="w-72 h-80 md:w-80 md:h-96 rounded-3xl overflow-hidden bg-gradient-to-br from-sage-100 to-beige-200 shadow-card">
-                {/* Placeholder - Replace with actual photo */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center space-y-3">
-                    <div className="w-24 h-24 rounded-full bg-sage-200 mx-auto flex items-center justify-center">
-                      <span className="font-heading text-3xl text-sage-500 font-bold">JG</span>
-                    </div>
-                    <p className="text-sage-500 text-sm">Professional Photo</p>
-                  </div>
-                </div>
+              <div className="w-72 h-80 md:w-80 md:h-96 rounded-3xl overflow-hidden shadow-card">
+                {/* Online therapy illustration */}
+                <img
+                  src="https://media.istockphoto.com/id/1363659665/vector/psychologist-doctor-online-consultation-psychotherapy-practice-psychological-help.jpg?s=612x612&w=0&k=20&c=NDy1JzeXlWjX42ofCj4mXcygSLBf4bpNvMkJ_-DdRJQ="
+                  alt="Online therapy consultation illustration"
+                  className="w-full h-full object-cover"
+                />
               </div>
               {/* Decorative frame */}
               <div className="absolute -z-10 top-4 left-4 w-full h-full rounded-3xl border-2 border-sage-200" />

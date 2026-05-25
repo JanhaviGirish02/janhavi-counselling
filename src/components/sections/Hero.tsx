@@ -103,18 +103,40 @@ export default function Hero() {
             className="relative flex justify-center lg:justify-end"
           >
             <div className="relative">
-              {/* Image Frame */}
-              <div className="w-72 h-96 md:w-80 md:h-[28rem] lg:w-96 lg:h-[32rem] rounded-3xl overflow-hidden bg-gradient-to-br from-sage-100 to-beige-200 shadow-card relative">
-                {/* Placeholder - Replace with actual professional photo */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center space-y-4">
-                    <div className="w-32 h-32 rounded-full bg-sage-200 mx-auto flex items-center justify-center">
-                      <span className="font-heading text-4xl text-sage-500 font-bold">JG</span>
-                    </div>
-                    <p className="text-sage-500 text-sm font-medium">Professional Photo</p>
-                    <p className="text-sage-400 text-xs">Replace with your portrait</p>
-                  </div>
+              {/* Animated Breathing Orb */}
+              <div className="w-72 h-96 md:w-80 md:h-[28rem] lg:w-96 lg:h-[32rem] rounded-3xl overflow-hidden bg-gradient-to-br from-sage-50 to-beige-100 shadow-card relative flex items-center justify-center group cursor-default select-none">
+                {/* Outermost ring */}
+                <div className="absolute w-64 h-64 rounded-full border border-sage-200/60 animate-[ping_4s_ease-in-out_infinite] opacity-30" />
+                {/* Breathing rings */}
+                <div className="absolute w-56 h-56 rounded-full border border-sage-200 group-hover:[animation-play-state:paused]"
+                  style={{ animation: 'breathe 4s ease-in-out infinite' }} />
+                <div className="absolute w-44 h-44 rounded-full border border-sage-300/70 group-hover:[animation-play-state:paused]"
+                  style={{ animation: 'breathe 4s ease-in-out infinite 0.3s' }} />
+                <div className="absolute w-32 h-32 rounded-full bg-gradient-to-br from-sage-200/60 to-sage-300/40 group-hover:[animation-play-state:paused]"
+                  style={{ animation: 'breathe 4s ease-in-out infinite 0.6s' }} />
+                {/* Core orb */}
+                <div className="relative z-10 w-24 h-24 rounded-full bg-gradient-to-br from-sage-300 to-sage-400 shadow-lg flex items-center justify-center group-hover:[animation-play-state:paused]"
+                  style={{ animation: 'breathe 4s ease-in-out infinite 0.9s' }}>
+                  <span className="font-heading text-2xl font-bold text-white">JG</span>
                 </div>
+                {/* Hover hint */}
+                <div className="absolute bottom-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <p className="text-sage-500 text-xs font-medium tracking-wider uppercase">Take a breath.</p>
+                </div>
+                {/* Subtle floating dots */}
+                <div className="absolute top-10 left-10 w-2 h-2 rounded-full bg-sage-300/50" style={{ animation: 'float 6s ease-in-out infinite' }} />
+                <div className="absolute top-20 right-8 w-1.5 h-1.5 rounded-full bg-rose-accent/40" style={{ animation: 'float 5s ease-in-out infinite 1s' }} />
+                <div className="absolute bottom-16 left-12 w-1 h-1 rounded-full bg-sage-400/50" style={{ animation: 'float 7s ease-in-out infinite 2s' }} />
+                <style>{`
+                  @keyframes breathe {
+                    0%, 100% { transform: scale(1); opacity: 0.9; }
+                    50% { transform: scale(1.15); opacity: 1; }
+                  }
+                  @keyframes float {
+                    0%, 100% { transform: translateY(0px); }
+                    50% { transform: translateY(-12px); }
+                  }
+                `}</style>
               </div>
 
               {/* Decorative Elements around image */}
