@@ -16,7 +16,7 @@ interface Props {
 
 const prices: Record<string, number> = {
   individual: 1500,
-  couple: 5,
+  couple: 3000,
   family: 4000,
   sports: 1500,
 };
