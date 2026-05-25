@@ -47,7 +47,7 @@ export default function About() {
               <div className="w-72 h-80 md:w-80 md:h-96 rounded-3xl overflow-hidden shadow-card">
                 {/* Online therapy illustration */}
                 <img
-                  src="https://media.istockphoto.com/id/1363659665/vector/psychologist-doctor-online-consultation-psychotherapy-practice-psychological-help.jpg?s=612x612&w=0&k=20&c=NDy1JzeXlWjX42ofCj4mXcygSLBf4bpNvMkJ_-DdRJQ="
+                  src="/online-therapy.jpg"
                   alt="Online therapy consultation illustration"
                   className="w-full h-full object-cover"
                 />

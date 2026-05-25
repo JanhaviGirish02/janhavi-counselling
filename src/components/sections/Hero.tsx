@@ -103,34 +103,42 @@ export default function Hero() {
             className="relative flex justify-center lg:justify-end"
           >
             <div className="relative">
-              {/* Animated Breathing Orb */}
-              <div className="w-72 h-96 md:w-80 md:h-[28rem] lg:w-96 lg:h-[32rem] rounded-3xl overflow-hidden bg-gradient-to-br from-sage-50 to-beige-100 shadow-card relative flex items-center justify-center group cursor-default select-none">
-                {/* Outermost ring */}
-                <div className="absolute w-64 h-64 rounded-full border border-sage-200/60 animate-[ping_4s_ease-in-out_infinite] opacity-30" />
-                {/* Breathing rings */}
-                <div className="absolute w-56 h-56 rounded-full border border-sage-200 group-hover:[animation-play-state:paused]"
+              {/* Animated Breathing Orb with integrated image */}
+              <div className="w-72 h-96 md:w-80 md:h-[28rem] lg:w-96 lg:h-[32rem] rounded-3xl overflow-hidden bg-gradient-to-br from-sage-50 via-beige-100 to-sage-100 shadow-card relative flex items-center justify-center group cursor-default select-none">
+                {/* Background glow */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-sage-100/40" />
+                {/* Outermost slow ping */}
+                <div className="absolute w-64 h-64 rounded-full border border-sage-200/50 opacity-40"
                   style={{ animation: 'breathe 4s ease-in-out infinite' }} />
-                <div className="absolute w-44 h-44 rounded-full border border-sage-300/70 group-hover:[animation-play-state:paused]"
-                  style={{ animation: 'breathe 4s ease-in-out infinite 0.3s' }} />
-                <div className="absolute w-32 h-32 rounded-full bg-gradient-to-br from-sage-200/60 to-sage-300/40 group-hover:[animation-play-state:paused]"
-                  style={{ animation: 'breathe 4s ease-in-out infinite 0.6s' }} />
-                {/* Core orb */}
-                <div className="relative z-10 w-24 h-24 rounded-full bg-gradient-to-br from-sage-300 to-sage-400 shadow-lg flex items-center justify-center group-hover:[animation-play-state:paused]"
-                  style={{ animation: 'breathe 4s ease-in-out infinite 0.9s' }}>
-                  <span className="font-heading text-2xl font-bold text-white">JG</span>
+                {/* Breathing rings */}
+                <div className="absolute w-56 h-56 rounded-full border-2 border-sage-200/80 group-hover:[animation-play-state:paused]"
+                  style={{ animation: 'breathe 4s ease-in-out infinite 0.4s' }} />
+                <div className="absolute w-48 h-48 rounded-full border border-sage-300/60 group-hover:[animation-play-state:paused]"
+                  style={{ animation: 'breathe 4s ease-in-out infinite 0.8s' }} />
+                {/* Image core — the illustration IS the orb center */}
+                <div
+                  className="relative z-10 w-44 h-44 rounded-full overflow-hidden shadow-xl ring-4 ring-white/70 group-hover:[animation-play-state:paused]"
+                  style={{ animation: 'breathe 4s ease-in-out infinite 1.2s' }}
+                >
+                  <img
+                    src="/therapy-illustration.png"
+                    alt="Therapy illustration"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 {/* Hover hint */}
                 <div className="absolute bottom-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                   <p className="text-sage-500 text-xs font-medium tracking-wider uppercase">Take a breath.</p>
                 </div>
-                {/* Subtle floating dots */}
-                <div className="absolute top-10 left-10 w-2 h-2 rounded-full bg-sage-300/50" style={{ animation: 'float 6s ease-in-out infinite' }} />
-                <div className="absolute top-20 right-8 w-1.5 h-1.5 rounded-full bg-rose-accent/40" style={{ animation: 'float 5s ease-in-out infinite 1s' }} />
-                <div className="absolute bottom-16 left-12 w-1 h-1 rounded-full bg-sage-400/50" style={{ animation: 'float 7s ease-in-out infinite 2s' }} />
+                {/* Floating dots */}
+                <div className="absolute top-10 left-10 w-2 h-2 rounded-full bg-sage-300/60" style={{ animation: 'float 6s ease-in-out infinite' }} />
+                <div className="absolute top-20 right-8 w-1.5 h-1.5 rounded-full bg-rose-accent/50" style={{ animation: 'float 5s ease-in-out infinite 1s' }} />
+                <div className="absolute bottom-16 left-12 w-1 h-1 rounded-full bg-sage-400/60" style={{ animation: 'float 7s ease-in-out infinite 2s' }} />
+                <div className="absolute bottom-24 right-10 w-2 h-2 rounded-full bg-beige-300/70" style={{ animation: 'float 5.5s ease-in-out infinite 0.5s' }} />
                 <style>{`
                   @keyframes breathe {
                     0%, 100% { transform: scale(1); opacity: 0.9; }
-                    50% { transform: scale(1.15); opacity: 1; }
+                    50% { transform: scale(1.12); opacity: 1; }
                   }
                   @keyframes float {
                     0%, 100% { transform: translateY(0px); }
