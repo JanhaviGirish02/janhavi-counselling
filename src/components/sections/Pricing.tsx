@@ -29,7 +29,7 @@ export default function Pricing() {
     {
       icon: Heart,
       title: 'Couple Therapy',
-      price: '₹3,000',
+      price: '₹5',
       suffix: 'onwards',
       features: [
         '60 minutes per session',
