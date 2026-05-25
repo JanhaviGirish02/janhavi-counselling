@@ -7,7 +7,7 @@ Disallow: /.next/
 Disallow: /node_modules/
 
 # Sitemap location
-Sitemap: https://janhavicounselling.com/sitemap.xml
+Sitemap: https://therapywithjanhavi.in/sitemap.xml
 
 # Crawl delay (optional - some search engines respect this)
 Crawl-delay: 1

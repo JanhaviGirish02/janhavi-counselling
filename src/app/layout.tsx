@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   },
   robots: 'index, follow',
   alternates: {
-    canonical: 'https://janhavicounselling.com',
+    canonical: 'https://therapywithjanhavi.in',
   },
 };
 
