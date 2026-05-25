@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -14,7 +16,6 @@ export async function POST(request: NextRequest) {
     console.log('RAZORPAY_KEY_SECRET:', keySecret ? '***HIDDEN***' : 'NOT SET');
 
     if (!keyId || !keySecret || keyId.includes('your_razorpay')) {
-      // Return demo order for development
       console.log('Razorpay not configured. Running in demo mode.');
       console.log('keyId falsy:', !keyId, '| keySecret falsy:', !keySecret);
       return NextResponse.json({
@@ -27,31 +28,37 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Razorpay configured. Creating order...');
-    // Create Razorpay order
-    const Razorpay = require('razorpay');
+    let Razorpay;
+    try {
+      Razorpay = require('razorpay');
+    } catch (e: any) {
+      console.error('Failed to load razorpay module:', e.message);
+      return NextResponse.json({ error: 'Razorpay module not available', message: e.message }, { status: 500 });
+    }
+
     const razorpay = new Razorpay({
       key_id: keyId,
       key_secret: keySecret,
     });
 
     const order = await razorpay.orders.create({
-      amount: amount * 100, // Razorpay expects amount in paise
+      amount: amount * 100,
       currency,
       receipt: `booking_${Date.now()}`,
       notes: {
         userId,
-        therapyType: bookingData.therapyType,
-        date: bookingData.date,
-        time: bookingData.time,
+        therapyType: bookingData?.therapyType,
+        date: bookingData?.date,
+        time: bookingData?.time,
       },
     });
 
     console.log('Razorpay order created successfully:', order.id);
     return NextResponse.json(order);
   } catch (error: any) {
-    console.error('Error creating order:', error);
+    console.error('Error creating order:', error?.message || error);
     return NextResponse.json(
-      { error: 'Failed to create order', message: error.message },
+      { error: 'Failed to create order', message: error?.message || String(error) },
       { status: 500 }
     );
   }

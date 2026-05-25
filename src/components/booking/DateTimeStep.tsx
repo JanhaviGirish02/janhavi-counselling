@@ -21,16 +21,15 @@ const DEFAULT_TIME_SLOTS = [
 ];
 const DEFAULT_AVAILABLE_DAYS = [1, 2, 3, 4, 5, 6]; // Mon–Sat
 
-// Simulated booked slots
-const bookedSlots: Record<string, string[]> = {};
-
 export default function DateTimeStep({ bookingData, updateBookingData, onNext, onPrev }: Props) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [timeSlots, setTimeSlots] = useState<string[]>(DEFAULT_TIME_SLOTS);
   const [availableDays, setAvailableDays] = useState<number[]>(DEFAULT_AVAILABLE_DAYS);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [bookedSlots, setBookedSlots] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
+    // Load availability settings
     getDoc(doc(db, 'settings', 'availability')).then((snap) => {
       if (snap.exists()) {
         const data = snap.data();
@@ -39,6 +38,26 @@ export default function DateTimeStep({ bookingData, updateBookingData, onNext, o
         if (data.blockedDates) setBlockedDates(data.blockedDates);
       }
     }).catch(() => {});
+
+    // Load confirmed bookings to block taken slots
+    import('firebase/firestore').then(({ collection, query, where, getDocs }) => {
+      import('@/lib/firebase').then(({ db: firestore }) => {
+        getDocs(query(
+          collection(firestore, 'bookings'),
+          where('status', 'in', ['confirmed', 'pending'])
+        )).then((snap) => {
+          const slots: Record<string, string[]> = {};
+          snap.docs.forEach((d) => {
+            const { date, time } = d.data();
+            if (date && time) {
+              if (!slots[date]) slots[date] = [];
+              slots[date].push(time);
+            }
+          });
+          setBookedSlots(slots);
+        }).catch(() => {});
+      });
+    });
   }, []);
   const today = startOfDay(new Date());
   const maxDate = addMonths(today, 2);
@@ -52,7 +71,7 @@ export default function DateTimeStep({ bookingData, updateBookingData, onNext, o
     if (!bookingData.date) return timeSlots;
     const booked = bookedSlots[bookingData.date] || [];
     return timeSlots.filter((slot) => !booked.includes(slot));
-  }, [bookingData.date, timeSlots]);
+  }, [bookingData.date, timeSlots, bookedSlots]);
 
   const isDateAvailable = (date: Date) => {
     if (isBefore(date, today)) return false;
