@@ -30,9 +30,9 @@ export default function TherapyTypeStep({ bookingData, updateBookingData, onNext
       description: 'Strengthen your relationship through guided sessions',
       price: '₹3,000 onwards',
       duration: '60 minutes',
-      color: 'border-rose-light hover:border-rose-accent hover:bg-rose-light/20',
-      selectedColor: 'border-rose-accent bg-rose-light/20 ring-2 ring-rose-light',
-      iconBg: 'bg-rose-light text-rose-dark',
+      color: 'border-sage-200 hover:border-sage-300 hover:bg-sage-50',
+      selectedColor: 'border-sage-400 bg-sage-50 ring-2 ring-sage-200',
+      iconBg: 'bg-sage-100 text-sage-600',
     },
     {
       id: 'family',

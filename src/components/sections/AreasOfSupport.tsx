@@ -152,7 +152,7 @@ export default function AreasOfSupport() {
         <div className="mb-16">
           <h3 className="font-heading text-2xl font-semibold text-charcoal mb-8 flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-sage-100 flex items-center justify-center">
-              <span className="text-sage-500 text-sm">ðŸ‘¤</span>
+              <span className="text-sage-500 text-sm">👤</span>
             </div>
             Individual Therapy
           </h3>
@@ -217,12 +217,12 @@ export default function AreasOfSupport() {
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="card bg-gradient-to-br from-rose-light/30 to-beige-100 border-rose-light/50"
+            className="card bg-gradient-to-br from-sage-100/30 to-sage-50 border-sage-200"
           >
             <div className="space-y-5">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-rose-light flex items-center justify-center">
-                  <Heart size={20} className="text-rose-dark" />
+                <div className="w-10 h-10 rounded-xl bg-sage-100 flex items-center justify-center">
+                  <Heart size={20} className="text-sage-600" />
                 </div>
                 <h3 className="font-heading text-xl font-semibold text-charcoal">Couple Therapy</h3>
               </div>

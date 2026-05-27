@@ -16,9 +16,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-sage-300 flex items-center justify-center">
-                <span className="text-white font-heading font-bold text-lg">J</span>
-              </div>
+              <img src="/logo.png" alt="Janhavi Counselling" className="h-10 w-10 rounded-full object-cover" />
               <span className="font-heading text-xl font-semibold">Janhavi</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
@@ -35,7 +33,7 @@ export default function Footer() {
                 <Instagram size={18} />
               </a>
               <a
-                href="mailto:janhavigirish@gmail.com"
+                href="mailto:therapywithjanhaviofficial@gmail.com"
                 className="w-10 h-10 rounded-full bg-white/10 hover:bg-sage-300 flex items-center justify-center transition-colors"
               >
                 <Mail size={18} />
@@ -93,7 +91,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center gap-3 text-gray-400 text-sm">
                 <Mail size={16} className="text-sage-300" />
-                janhavigirish@gmail.com
+                therapywithjanhaviofficial@gmail.com
               </li>
               <li className="flex items-start gap-3 text-gray-400 text-sm">
                 <span className="text-sage-300 text-xs mt-0.5">&#x25CF;</span>

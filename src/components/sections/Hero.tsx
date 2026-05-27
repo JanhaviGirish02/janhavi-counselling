@@ -117,13 +117,13 @@ export default function Hero() {
                   style={{ animation: 'breathe 4s ease-in-out infinite 0.8s' }} />
                 {/* Image core — the illustration IS the orb center */}
                 <div
-                  className="relative z-10 w-44 h-44 rounded-full overflow-hidden shadow-xl ring-4 ring-white/70 group-hover:[animation-play-state:paused]"
+                  className="relative z-10 w-39 h-40 rounded-full overflow-hidden shadow-xl ring-4 ring-white/70 group-hover:[animation-play-state:paused]"
                   style={{ animation: 'breathe 4s ease-in-out infinite 1.2s' }}
                 >
                   <img
                     src="/therapy-illustration.png"
                     alt="Therapy illustration"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover scale-90"
                   />
                 </div>
                 {/* Hover hint */}

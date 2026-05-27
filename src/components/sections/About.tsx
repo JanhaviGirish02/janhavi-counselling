@@ -7,8 +7,8 @@ import { Clock, Globe, Shield, Video } from 'lucide-react';
 export default function About() {
   const badges = [
     { icon: Clock, label: '600+ Clinical Hours', color: 'bg-sage-100 text-sage-700' },
-    { icon: Globe, label: '4 Languages', color: 'bg-beige-100 text-charcoal-light' },
-    { icon: Shield, label: 'Evidence-Based Therapy', color: 'bg-rose-light text-rose-dark' },
+    { icon: Globe, label: '4 Languages', color: 'bg-sage-100 text-sage-700' },
+    { icon: Shield, label: 'Evidence-Based Therapy', color: 'bg-sage-100 text-sage-700' },
     { icon: Video, label: 'Online Sessions', color: 'bg-sage-100 text-sage-700' },
   ];
 

@@ -43,7 +43,7 @@ export default function CTABanner() {
                 <ArrowRight size={18} />
               </Link>
               <a
-                href="mailto:janhavigirish@gmail.com"
+                href="mailto:therapywithjanhaviofficial@gmail.com"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-white/60 text-white font-semibold rounded-2xl hover:bg-white/10 transition-all duration-300"
               >
                 Contact over Email

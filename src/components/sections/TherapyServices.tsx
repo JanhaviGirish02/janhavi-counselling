@@ -19,8 +19,8 @@ export default function TherapyServices() {
       icon: Heart,
       title: 'Couple Therapy',
       description: 'Strengthen your relationship through better communication, trust-building, and conflict resolution in a supportive environment.',
-      color: 'from-rose-light to-beige-100',
-      iconBg: 'bg-rose-light text-rose-dark',
+      color: 'from-sage-100 to-sage-50',
+      iconBg: 'bg-sage-100 text-sage-600',
       href: '/book?type=couple',
     },
     {

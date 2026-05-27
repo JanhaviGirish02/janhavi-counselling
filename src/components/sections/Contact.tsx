@@ -71,7 +71,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <h4 className="font-medium text-charcoal">Email</h4>
-                  <p className="text-charcoal-lighter text-sm mt-1">janhavigirish@gmail.com</p>
+                  <p className="text-charcoal-lighter text-sm mt-1">therapywithjanhaviofficial@gmail.com</p>
                   <p className="text-xs text-charcoal-lighter mt-0.5">Response within 24–48 hours</p>
                 </div>
               </div>

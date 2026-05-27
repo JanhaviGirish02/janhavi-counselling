@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'Janhavi Girish | Counselling Psychologist - Online Therapy India',
   description: 'Creating a warm, safe, and judgment-free space for emotional healing, self-growth, and meaningful change. Book online therapy sessions for anxiety, depression, relationship issues, and more.',
   keywords: 'Counselling Psychologist Bangalore, Online Therapy India, Anxiety Counselling, Couple Therapy Online, Academic Stress Counselling, Depression Therapy, Family Therapy',
+  icons: {
+    icon: '/favicon.png',
+  },
   openGraph: {
     title: 'Janhavi Girish | Counselling Psychologist',
     description: 'Creating a warm, safe, and judgment-free space for emotional healing, self-growth, and meaningful change.',

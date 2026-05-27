@@ -618,7 +618,7 @@ export default function AdminDashboard() {
               <h2 className="font-heading text-lg font-semibold mb-6">Practice Settings</h2>
               <div className="space-y-4">
                 {[
-                  { label: 'Admin / Contact Email', key: 'adminEmail', type: 'email', placeholder: 'janhavigirish@gmail.com' },
+                  { label: 'Admin / Contact Email', key: 'adminEmail', type: 'email', placeholder: 'therapywithjanhaviofficial@gmail.com' },
                   { label: 'Instagram Profile URL', key: 'instagramUrl', type: 'url', placeholder: 'https://instagram.com/yourhandle' },
                   { label: 'Session Timings (shown on website)', key: 'sessionTimings', type: 'text', placeholder: 'Monday \u2013 Saturday, 10:00 AM \u2013 8:00 PM IST' },
                   { label: 'Notice Banner (leave blank to hide)', key: 'noticeBanner', type: 'text', placeholder: 'e.g. Out of office until Jan 10' },

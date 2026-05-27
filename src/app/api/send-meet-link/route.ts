@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
           <p style="font-size: 12px; color: #888;">Link: <a href="${meetLink}">${meetLink}</a></p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
           <p style="font-size: 12px; color: #888;">
-            Therapy with Janhavi Girish &bull; janhavigirish@gmail.com
+            Therapy with Janhavi Girish &bull; therapywithjanhaviofficial@gmail.com
           </p>
         </div>
       `,

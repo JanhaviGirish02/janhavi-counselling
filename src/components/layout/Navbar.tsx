@@ -40,9 +40,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-sage-300 flex items-center justify-center">
-            <span className="text-white font-heading font-bold text-lg">J</span>
-          </div>
+          <img src="/logo.png" alt="Janhavi Counselling" className="h-10 w-10 rounded-full object-cover" />
           <span className="font-heading text-xl font-semibold text-charcoal hidden sm:block">
             Janhavi
           </span>
